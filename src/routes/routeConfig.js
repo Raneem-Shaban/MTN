@@ -14,6 +14,8 @@ import Evaluations from "../pages/Evaluations/Evaluations";
 import ReportsWrapper from "../pages/ReportsWrapper/ReportsWrapper";
 import HomeWrapper from "../pages/HomeWrapper/HomeWrapper";
 import UserLandingPage from "../pages/Landing/UserLandingPage";
+import UserInquiryDetails from "../pages/Inquiries/UserInquiryDetails"
+import UserAddInquery from "../pages/Inquiries/UserAddInquery"
 
 const routes = [
   // home routes
@@ -72,6 +74,18 @@ const routes = [
     roles: [3], // مدرب فقط
   },
 
+  // inquirey detail 
+  {
+    path: '/details/:id',
+    element: <UserInquiryDetails />,
+    roles: [4, 5],
+  },
+  // add inquirey 
+  {
+    path: '/add',
+    element: <UserAddInquery />,
+    roles: [4, 5],
+  },
   // reports
   {
     path: '/reports',
