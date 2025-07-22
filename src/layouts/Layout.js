@@ -7,11 +7,13 @@ import AppRoutes from '../routes/AppRoutes';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import VerifyCode from '../pages/Auth/VerifyCode';
 import ResetPassword from '../pages/Auth/ResetPassword';
+import UserLandingPage from '../pages/Landing/UserLandingPage';
+import ProtectedRoute from '../routes/ProtectedRoute';
 
 
 const Layout = () => {
     const location = useLocation();
-    const hideLayoutRoutes = ['/login', '/forgot-password','/verify-code','/reset-password'];
+    const hideLayoutRoutes = ['/login', '/forgot-password','/verify-code','/reset-password','/landing'];
 
     const shouldHideLayout = hideLayoutRoutes.includes(location.pathname);
 
