@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { IoClose } from 'react-icons/io5';
 import { Pencil } from 'lucide-react';
 import Input from '../common/inputs/Input';
 import Select from '../common/inputs/Select';
+import { FiChevronDown } from 'react-icons/fi';
 
 const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
   const [form, setForm] = useState({
@@ -67,17 +69,25 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-2">
-      <div className="bg-[var(--color-white)] rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-[var(--color-bg)] p-6 rounded-lg w-full max-w-md md:max-w-lg lg:max-w-xl relative">
         {/* Icon */}
-        <div className="flex justify-center mt-5">
-          <div className="w-10 h-10 rounded-full bg-[var(--color-status-open-bg)] flex items-center justify-center shadow-sm">
-            <Pencil size={20} color="var(--color-secondary)" />
+        <div className="flex justify-center -mt-16 mb-6">
+          <div className="bg-blue-100 p-4 rounded-full border-4 border-[var(--color-bg)] shadow-md">
+            <Pencil className="text-[var(--color-secondary)] text-2xl" />
           </div>
         </div>
 
-        {/* Inputs */}
-        <div className="overflow-y-auto px-6 pt-4 pb-2 space-y-4">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] text-2xl"
+        >
+          <IoClose />
+        </button>
+
+        {/* Form */}
+        <div className="space-y-4 max-h-[65vh] overflow-y-auto px-3 pb-2">
           <Input
             label="Name"
             value={form.name}
@@ -87,27 +97,36 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
           />
           <Input
             label="Email"
+            type="email"
             value={form.email}
             onChange={(e) => handleChange('email', e.target.value)}
             onBlur={() => handleBlur('email')}
             error={touched.email && errors.email}
           />
-          <Select
-            label="Role"
-            options={['Supervisor', 'Trainer', 'User']}
-            value={form.role}
-            onChange={(value) => handleChange('role', value)}
-            onBlur={() => handleBlur('role')}
-            error={touched.role && errors.role}
-          />
-          <Select
-            label="Section"
-            options={['Training', 'Support', 'Sales']}
-            value={form.section}
-            onChange={(value) => handleChange('section', value)}
-            onBlur={() => handleBlur('section')}
-            error={touched.section && errors.section}
-          />
+          <div className="relative">
+            <Select
+              className="w-full border border-[var(--color-text-muted)] p-3 rounded appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
+              label="Role"
+              options={['Supervisor', 'Trainer', 'User']}
+              value={form.role}
+              onChange={(value) => handleChange('role', value)}
+              onBlur={() => handleBlur('role')}
+              error={touched.role && errors.role}
+            />
+            <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
+          </div>
+          <div className="relative">
+            <Select
+              className="w-full border border-[var(--color-text-muted)] p-3 rounded appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
+              label="Section"
+              options={['Training', 'Support', 'Sales']}
+              value={form.section}
+              onChange={(value) => handleChange('section', value)}
+              onBlur={() => handleBlur('section')}
+              error={touched.section && errors.section}
+            />
+            <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
+          </div>
           <Input
             label="Position"
             value={form.position}
@@ -117,22 +136,22 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
           />
         </div>
 
-        {/* Footer buttons */}
-        <div className="px-6 py-4 mt-auto border-t border-[var(--color-border)] bg-[var(--color-white)] rounded-b-2xl">
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={onClose}
-              className="w-full py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-main)]"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="w-full py-2 rounded-lg text-[var(--color-white)] bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-hover)] shadow transition"
-            >
-              Save
-            </button>
-          </div>
+        {/* Footer Buttons */}
+        <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full sm:w-1/2 border border-[var(--color-text-muted)] text-[var(--color-text-main)] hover:bg-[var(--color-text-muted)] py-2 rounded"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="w-full sm:w-1/2 bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-hover)] text-white py-2 rounded"
+          >
+            Save
+          </button>
         </div>
       </div>
     </div>

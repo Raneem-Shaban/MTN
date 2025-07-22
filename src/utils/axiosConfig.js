@@ -1,13 +1,12 @@
-// src/config/axiosConfig.js
 import axios from 'axios';
 
-// ✅ اضبطي الرابط الأساسي
+// baseURL إلى رابط ngrok
 axios.defaults.baseURL = 'http://127.0.0.1:8000';
 
-// ✅ أرسلي الكوكيز تلقائيًا
+// ضروري لإرسال الكوكيز مثل XSRF-TOKEN و session
 axios.defaults.withCredentials = true;
 
-// ✅ أرسلي XSRF-TOKEN تلقائيًا في كل الطلبات
+// (اختياري) إرسال XSRF-TOKEN تلقائيًا من الكوكيز
 axios.interceptors.request.use((config) => {
   const getCookie = (name) => {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));

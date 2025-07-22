@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import { IoClose } from 'react-icons/io5';
 import { LayoutDashboard } from 'lucide-react';
 import Input from '../common/inputs/Input';
-import Select from '../common/inputs/Select';
+import { FiPlusCircle } from 'react-icons/fi';
 
 const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
   const [form, setForm] = useState({
     name: '',
-    status: '',
+    description: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -21,7 +22,6 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-
     if (touched[field]) {
       const error = validateField(field, value);
       setErrors((prev) => ({ ...prev, [field]: error }));
@@ -37,6 +37,7 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
   const handleSubmit = () => {
     const newErrors = {};
     const newTouched = {};
+
     Object.keys(form).forEach((field) => {
       newErrors[field] = validateField(field, form[field]);
       newTouched[field] = true;
@@ -48,7 +49,7 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
     if (Object.values(newErrors).every((e) => !e)) {
       onSubmit(form);
       onClose();
-      setForm({ name: '', status: '' }); // reset after submission
+      setForm({ name: '', description: '' });
       setErrors({});
       setTouched({});
     }
@@ -57,16 +58,22 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-2">
-      <div className="bg-[var(--color-white)] rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
-        {/* Icon */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-[var(--color-bg)] rounded-lg w-full max-w-md md:max-w-lg lg:max-w-xl relative max-h-[90vh] flex flex-col">
+        {/* Icon and Close */}
         <div className="flex justify-center mt-5">
-          <div className="w-10 h-10 rounded-full bg-[var(--color-status-open-bg)] flex items-center justify-center shadow-sm">
-            <LayoutDashboard size={20} color="var(--color-secondary)" />
+          <div className="bg-[var(--color-trainer-task)] p-4 rounded-full border-4 border-white shadow-md -mt-12">
+            <LayoutDashboard size={24} className="text-[var(--color-secondary)]" />
           </div>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] text-2xl"
+          >
+            <IoClose />
+          </button>
         </div>
 
-        {/* Form fields */}
+        {/* Form Fields */}
         <div className="overflow-y-auto px-6 pt-4 pb-2 space-y-4">
           <Input
             label="Name"
@@ -75,28 +82,28 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
             onBlur={() => handleBlur('name')}
             error={touched.name && errors.name}
           />
-          <Select
-            label="Status"
-            options={['Active', 'Inactive']}
-            value={form.status}
-            onChange={(value) => handleChange('status', value)}
-            onBlur={() => handleBlur('status')}
-            error={touched.status && errors.status}
+          <Input
+            label="Description"
+            value={form.description}
+            onChange={(e) => handleChange('description', e.target.value)}
+            onBlur={() => handleBlur('description')}
+            error={touched.description && errors.description}
           />
         </div>
 
-        {/* Sticky footer */}
-        <div className="px-6 py-4 mt-auto border-t border-[var(--color-border)] bg-[var(--color-white)] rounded-b-2xl">
-          <div className="grid grid-cols-2 gap-3">
+        {/* Footer Buttons */}
+        <div className="px-6 py-4 mt-auto border-t bg-[var(--color-bg)] rounded-b-lg">
+          <div className="flex flex-col sm:flex-row justify-between gap-3">
             <button
+              type="button"
               onClick={onClose}
-              className="w-full py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-main)]"
+              className="w-full sm:w-1/2 border border-[var(--color-text-muted)] text-[var(--color-text-main)] py-2 rounded hover:bg-[var(--color-text-muted)] transition"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
-              className="w-full py-2 rounded-lg text-[var(--color-white)] bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-hover)] shadow transition"
+              className="w-full sm:w-1/2 bg-[var(--color-secondary)] text-[var(--color-bg)] py-2 rounded hover:bg-[var(--color-secondary-hover)] transition"
             >
               Add
             </button>

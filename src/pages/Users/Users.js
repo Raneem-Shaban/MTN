@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FilterTabs from '../../components/common/filters/FilterTabs';
 import DynamicTable from '../../components/common/tables/DynamicTable';
 import Pagination from '../../components/common/pagination/Pagination';
@@ -7,96 +7,95 @@ import { StatusBadge } from '../../components/common/badges/StatusBadge';
 import FloatingActionButton from '../../components/common/buttons/FloatingActionButton';
 import UserFormModal from '../../components/modals/UserFormModal';
 import UserEditModal from '../../components/modals/UserEditModal';
+import { API_BASE_URL } from '../../constants/constants';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
 
 const tabs = ['All users', 'Supervisors', 'Trainers', 'Users', 'Blocked Users'];
-
-const users = [
-  {
-    name: 'Raneem',
-    email: 'raneem@gmail.com',
-    role: 'Supervisor',
-    position: 'Team Lead',
-    status: 'Active',
-  },
-  {
-    name: 'Salma',
-    email: 'salma@gmail.com',
-    role: 'Trainer',
-    position: 'Training Officer',
-    status: 'Active',
-  },
-  {
-    name: 'Nour',
-    email: 'nour@gmail.com',
-    role: 'Trainer',
-    position: 'HR Trainer',
-    status: 'Inactive',
-  },
-  {
-    name: 'Solaf',
-    email: 'solaf@gmail.com',
-    role: 'User',
-    position: 'Support',
-    status: 'Active',
-  },
-  {
-    name: 'Alaa',
-    email: 'alaa@gmail.com',
-    role: 'Supervisor',
-    position: 'Operations Manager',
-    status: 'Suspended',
-  },
-  {
-    name: 'Mhd',
-    email: 'mhd@gmail.com',
-    role: 'User',
-    position: 'Customer Agent',
-    status: 'Active',
-  },
-  {
-    name: 'Lina',
-    email: 'lina@gmail.com',
-    role: 'User',
-    position: 'Intern',
-    status: 'Inactive',
-  },
-];
 
 const userStatusColors = {
   Active: { bg: 'var(--color-status-open-bg)', text: 'var(--color-status-open)' },
   Suspended: { bg: 'var(--color-status-closed-bg)', text: 'var(--color-status-closed)' },
   Inactive: { bg: 'var(--color-status-pending-bg)', text: 'var(--color-status-pending)' },
+  Pending: { bg: 'var(--color-status-pending-bg)', text: 'var(--color-status-pending)' },
+
+};
+
+const roleMap = {
+  1: 'SuperAdmin',
+  2: 'Admin',
+  3: 'Trainer',
+  4: 'Assistant',
+  5: 'User',
 };
 
 const UsersPage = () => {
   const [selectedTab, setSelectedTab] = useState('All users');
   const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
+  
+
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = res.data;
+
+        const formatted = data.map((user) => {
+          let displayStatus = 'Blocked';
+
+          if (user.status === 1) {
+            displayStatus = user.email_verified_at ? 'Active' : 'Pending';
+          }
+
+          return {
+            ...user,
+            role: roleMap[user.role_id] || 'Unknown',
+            status: displayStatus,
+          };
+        });
+
+        setUsers(formatted);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+
 
   const handleAddUser = (formData) => {
     console.log('New User:', formData);
-    // You can call API here or update state
+    // API call to add user
   };
-
 
   const filtered =
     selectedTab === 'All users'
       ? users
       : selectedTab === 'Blocked Users'
-        ? users.filter((u) => u.status === 'Blocked' || u.status === 'Inactive')
+        ? users.filter((u) => u.status === 'Blocked')
         : users.filter((u) => u.role === selectedTab.slice(0, -1));
-  const pageSize = 5;
-  const paginated = filtered.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+
+  const pageSize = 10;
+  const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleRowClick = (row) => {
-    // window.location.href = `/users/${row.name.toLowerCase()}`;
+    // Optional
   };
+
   const handleEdit = (row) => {
     console.log('Edit user:', row);
     setSelectedUser(row);
@@ -106,7 +105,7 @@ const UsersPage = () => {
   const handleUpdateUser = (updatedUserData) => {
     console.log('Updated user:', updatedUserData);
     setIsEditOpen(false);
-    // Optionally update the user list or send API request here
+    // Refresh users or update state manually
   };
 
   const handleBlockToggle = (row) => {
@@ -125,11 +124,11 @@ const UsersPage = () => {
         <span
           style={{
             color:
-              val === 'Supervisor'
+              val === 'SuperAdmin' || val === 'Admin'
                 ? 'var(--color-secondary)'
                 : val === 'Trainer'
                   ? 'var(--color-danger)'
-                  : val === 'User'
+                  : val === 'User' || val === 'Assistant'
                     ? 'var(--color-primary)'
                     : 'var(--color-warning)',
           }}
@@ -137,16 +136,13 @@ const UsersPage = () => {
         >
           {val}
         </span>
-
       ),
     },
     { header: 'Position', accessor: 'position' },
     {
       header: 'Status',
       accessor: 'status',
-      cell: (val) => (
-        <StatusBadge value={val} colorMap={userStatusColors} />
-      ),
+      cell: (val) => <StatusBadge value={val} colorMap={userStatusColors} />,
     },
     {
       header: 'Edit',
@@ -155,10 +151,7 @@ const UsersPage = () => {
         <OutlineButton
           title="Edit"
           color="secondary"
-          onClick={() => {
-            console.log('Edit button clicked for:', row);
-            handleEdit(row);
-          }}
+          onClick={() => handleEdit(row)}
         />
       ),
     },
@@ -218,7 +211,7 @@ const UsersPage = () => {
         isOpen={isEditOpen}
         user={selectedUser}
         onClose={() => setIsEditOpen(false)}
-        onSubmit={handleUpdateUser} 
+        onSubmit={handleUpdateUser}
       />
     </div>
   );

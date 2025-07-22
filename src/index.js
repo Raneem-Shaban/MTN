@@ -7,6 +7,21 @@ import store from './store/store';
 import './index.css'
 import axios from 'axios';
 
+// خلي هذا قبل render
+axios.defaults.withCredentials = true;
+
+// أضيفي هذا interceptor لفحص الردود تلقائياً
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');     // نحذف التوكن لأنه غير صالح
+      window.location.href = '/login';      // نوجه المستخدم لصفحة تسجيل الدخول
+    }
+    return Promise.reject(error);
+  }
+);
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 axios.defaults.withCredentials = true;
 root.render(

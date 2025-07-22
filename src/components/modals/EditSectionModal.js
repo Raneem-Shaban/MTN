@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IoClose } from 'react-icons/io5';
 import { LayoutDashboard } from 'lucide-react';
 import Input from '../common/inputs/Input';
 
-const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
+const EditSectionModal = ({ isOpen, onClose, onSubmit, initialData }) => {
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -12,6 +12,16 @@ const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        name: initialData.name || '',
+        email: initialData.email || '',
+        division: initialData.division || '',
+      });
+    }
+  }, [initialData]);
 
   const validateField = (field, value) => {
     if (!value || value.trim() === '') {
@@ -51,7 +61,6 @@ const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
     if (Object.values(newErrors).every((e) => !e)) {
       onSubmit(form);
       onClose();
-      setForm({ name: '', email: '', division: '' });
       setErrors({});
       setTouched({});
     }
@@ -112,7 +121,7 @@ const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
               onClick={handleSubmit}
               className="w-full sm:w-1/2 bg-[var(--color-secondary)] text-[var(--color-bg)] py-2 rounded hover:bg-[var(--color-secondary-hover)] transition"
             >
-              Add
+              Update
             </button>
           </div>
         </div>
@@ -121,4 +130,4 @@ const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
   );
 };
 
-export default SectionFormModal;
+export default EditSectionModal;

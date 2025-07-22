@@ -1,24 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { IoClose } from 'react-icons/io5';
 import { UserPlus2 } from 'lucide-react';
 import Input from '../common/inputs/Input';
 import Select from '../common/inputs/Select';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { FiEye, FiEyeOff, FiChevronDown } from 'react-icons/fi';
+import { API_BASE_URL } from '../../constants/constants';
 
-const UserFormModal = ({ isOpen, onClose, onSubmit }) => {
+const UserFormModal = ({ isOpen, onClose }) => {
+  const token = useSelector((state) => state.auth.user.token);
   const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
+    password_confirmation: '',
     role: '',
     section: '',
-    position: '',
   });
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [roles, setRoles] = useState([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
+  const selectedRole = roles.find((r) => r.name === form.role);
+  const role_id = selectedRole ? selectedRole.id : null;
+  const [sections, setSections] = useState([]);
+  const [loadingSections, setLoadingSections] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchRoles = async () => {
+      setLoadingRoles(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/roles`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+        );
+        setRoles(res.data);
+      } catch (err) {
+        toast.error('Failed to load roles');
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    const fetchSections = async () => {
+      setLoadingSections(true);
+
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/sections`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setSections(res.data);
+      } catch (err) {
+        toast.error('Failed to load sections');
+      } finally {
+        setLoadingSections(false);
+      }
+    };
+
+    fetchRoles();
+    fetchSections();
+  }, [isOpen, token]);
 
   const validateField = (field, value) => {
     if (!value) {
       return 'Required';
+    }
+    if (field === 'password_confirmation' && value !== form.password) {
+      return 'Passwords do not match';
     }
     return '';
   };
@@ -30,6 +91,11 @@ const UserFormModal = ({ isOpen, onClose, onSubmit }) => {
       const error = validateField(field, value);
       setErrors((prev) => ({ ...prev, [field]: error }));
     }
+
+    if (field === 'password' && touched.password_confirmation) {
+      const error = validateField('password_confirmation', form.password_confirmation);
+      setErrors((prev) => ({ ...prev, password_confirmation: error }));
+    }
   };
 
   const handleBlur = (field) => {
@@ -38,7 +104,16 @@ const UserFormModal = ({ isOpen, onClose, onSubmit }) => {
     setErrors((prev) => ({ ...prev, [field]: error }));
   };
 
-  const handleSubmit = () => {
+  const getSectionId = (sectionName) => {
+    const map = {
+      Training: 1,
+      Support: 2,
+      Sales: 3,
+    };
+    return map[sectionName] || 1;
+  };
+
+  const handleSubmit = async () => {
     const newErrors = {};
     const newTouched = {};
 
@@ -51,24 +126,52 @@ const UserFormModal = ({ isOpen, onClose, onSubmit }) => {
     setTouched(newTouched);
 
     if (Object.values(newErrors).every((e) => !e)) {
-      onSubmit(form);
-      onClose();
+      try {
+        await axios.post(
+          `${API_BASE_URL}/api/add_user`,
+          {
+            name: form.name,
+            email: form.email,
+            password: form.password,
+            password_confirmation: form.password_confirmation,
+            role_id,
+            section_id: getSectionId(form.section),
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        toast.success('User added successfully!');
+        onClose();
+      } catch (error) {
+        console.error(error);
+        toast.error(
+          error.response?.data?.message || 'Failed to add user.'
+        );
+      }
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-2">
-      <div className="bg-[var(--color-white)] rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
-        {/* Icon */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-[var(--color-bg)] rounded-lg w-full max-w-md md:max-w-lg lg:max-w-xl relative max-h-[90vh] flex flex-col">
         <div className="flex justify-center mt-5">
-          <div className="w-10 h-10 rounded-full bg-[var(--color-status-open-bg)] flex items-center justify-center shadow-sm">
-            <UserPlus2 size={20} color="var(--color-secondary)" />
+          <div className="bg-[var(--color-trainer-task)] p-4 rounded-full border-4 border-white shadow-md -mt-12">
+            <UserPlus2 size={24} className="text-[var(--color-secondary)]" />
           </div>
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] text-2xl"
+          >
+            <IoClose />
+          </button>
         </div>
 
-        {/* Form fields (scrollable) */}
         <div className="overflow-y-auto px-6 pt-4 pb-2 space-y-4">
           <Input
             label="Name"
@@ -79,56 +182,85 @@ const UserFormModal = ({ isOpen, onClose, onSubmit }) => {
           />
           <Input
             label="Email"
+            type="email"
             value={form.email}
             onChange={(e) => handleChange('email', e.target.value)}
             onBlur={() => handleBlur('email')}
             error={touched.email && errors.email}
           />
-          <Input
-            label="Password"
-            type="password"
-            value={form.password}
-            onChange={(e) => handleChange('password', e.target.value)}
-            onBlur={() => handleBlur('password')}
-            error={touched.password && errors.password}
-          />
-          <Select
-            label="Role"
-            options={['Supervisor', 'Trainer', 'User']}
-            value={form.role}
-            onChange={(value) => handleChange('role', value)}
-            onBlur={() => handleBlur('role')}
-            error={touched.role && errors.role}
-          />
-          <Select
-            label="Section"
-            options={['Training', 'Support', 'Sales']}
-            value={form.section}
-            onChange={(value) => handleChange('section', value)}
-            onBlur={() => handleBlur('section')}
-            error={touched.section && errors.section}
-          />
-          <Input
-            label="Position"
-            value={form.position}
-            onChange={(e) => handleChange('position', e.target.value)}
-            onBlur={() => handleBlur('position')}
-            error={touched.position && errors.position}
-          />
+          <div className="relative">
+            <Input
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              value={form.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              onBlur={() => handleBlur('password')}
+              error={touched.password && errors.password}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-[38px] text-gray-500"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
+          </div>
+
+          <div className="relative">
+            <Input
+              label="Confirm Password"
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={form.password_confirmation}
+              onChange={(e) => handleChange('password_confirmation', e.target.value)}
+              onBlur={() => handleBlur('password_confirmation')}
+              error={touched.password_confirmation && errors.password_confirmation}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-[38px] text-gray-500"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+            >
+              {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
+          </div>
+
+          <div className="relative">
+            <Select
+              label="Role"
+              options={roles.map((role) => role.name)}
+              value={form.role}
+              onChange={(value) => handleChange('role', value)}
+              onBlur={() => handleBlur('role')}
+              error={touched.role && errors.role}
+            />
+
+            <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
+          </div>
+          <div className="relative">
+            <Select
+              label="Section"
+              options={sections.map((s) => `${s.name} (${s.division})`)}
+              value={form.section}
+              onChange={(value) => handleChange('section', value)}
+              onBlur={() => handleBlur('section')}
+              error={touched.section && errors.section}
+            />
+            <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
+          </div>
         </div>
 
-        {/* Sticky footer with rounded buttons */}
-        <div className="px-6 py-4 mt-auto border-t border-[var(--color-border)] bg-[var(--color-white)] rounded-b-2xl">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="px-6 py-4 mt-auto border-t bg-[var(--color-bg)] rounded-b-lg">
+          <div className="flex flex-col sm:flex-row justify-between gap-3">
             <button
+              type="button"
               onClick={onClose}
-              className="w-full py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text-main)]"
+              className="w-full sm:w-1/2 border border-[var(--color-text-muted)] text-[var(--color-text-main)] py-2 rounded hover:bg-[var(--color-text-muted)] transition"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
-              className="w-full py-2 rounded-lg text-[var(--color-white)] bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-hover)] shadow transition"
+              className="w-full sm:w-1/2 bg-[var(--color-secondary)] text-[var(--color-bg)] py-2 rounded hover:bg-[var(--color-secondary-hover)] transition"
             >
               Add
             </button>

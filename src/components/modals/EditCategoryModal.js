@@ -1,24 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IoClose } from 'react-icons/io5';
 import { LayoutDashboard } from 'lucide-react';
 import Input from '../common/inputs/Input';
 
-const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    division: '',
-  });
-
+const EditCategoryModal = ({ isOpen, onClose, onSubmit, initialData }) => {
+  const [form, setForm] = useState({ name: '', description: '' });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({ name: initialData.name || '', description: initialData.description || '' });
+    }
+  }, [initialData]);
 
   const validateField = (field, value) => {
     if (!value || value.trim() === '') {
       return 'Required';
-    }
-    if (field === 'email' && !/\S+@\S+\.\S+/.test(value)) {
-      return 'Invalid email';
     }
     return '';
   };
@@ -40,6 +38,7 @@ const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
   const handleSubmit = () => {
     const newErrors = {};
     const newTouched = {};
+
     Object.keys(form).forEach((field) => {
       newErrors[field] = validateField(field, form[field]);
       newTouched[field] = true;
@@ -49,11 +48,8 @@ const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
     setTouched(newTouched);
 
     if (Object.values(newErrors).every((e) => !e)) {
-      onSubmit(form);
+      onSubmit({ ...form, id: initialData.id });
       onClose();
-      setForm({ name: '', email: '', division: '' });
-      setErrors({});
-      setTouched({});
     }
   };
 
@@ -83,19 +79,11 @@ const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
             error={touched.name && errors.name}
           />
           <Input
-            label="Email"
-            type="email"
-            value={form.email}
-            onChange={(e) => handleChange('email', e.target.value)}
-            onBlur={() => handleBlur('email')}
-            error={touched.email && errors.email}
-          />
-          <Input
-            label="Division"
-            value={form.division}
-            onChange={(e) => handleChange('division', e.target.value)}
-            onBlur={() => handleBlur('division')}
-            error={touched.division && errors.division}
+            label="Description"
+            value={form.description}
+            onChange={(e) => handleChange('description', e.target.value)}
+            onBlur={() => handleBlur('description')}
+            error={touched.description && errors.description}
           />
         </div>
 
@@ -112,7 +100,7 @@ const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
               onClick={handleSubmit}
               className="w-full sm:w-1/2 bg-[var(--color-secondary)] text-[var(--color-bg)] py-2 rounded hover:bg-[var(--color-secondary-hover)] transition"
             >
-              Add
+              Update
             </button>
           </div>
         </div>
@@ -121,4 +109,4 @@ const SectionFormModal = ({ isOpen, onClose, onSubmit }) => {
   );
 };
 
-export default SectionFormModal;
+export default EditCategoryModal;

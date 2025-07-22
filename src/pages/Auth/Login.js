@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { login } from '../../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
-import axios from '../../utils/axiosConfig';
+// import axios from '../../utils/axiosConfig';
+import axios from 'axios';
 import { API_BASE_URL } from '../../constants/constants';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
@@ -22,7 +23,7 @@ export default function Login() {
         setError(null);
 
         try {
-            await axios.get(`${API_BASE_URL}/sanctum/csrf-cookie`, { withCredentials: true });
+            // await axios.get(`${API_BASE_URL}/sanctum/csrf-cookie`, { withCredentials: true });
             const response = await axios.post(`${API_BASE_URL}/api/login`, {
                 email,
                 password
@@ -32,6 +33,7 @@ export default function Login() {
 
             const { token, user } = response.data;
             console.log("Login response:", response.data);
+            localStorage.setItem('token', token);
 
             dispatch(login({
                 id: user.id,

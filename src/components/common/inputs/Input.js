@@ -17,12 +17,12 @@ const Input = ({ label, type = 'text', value, onChange, error }) => {
           text-sm
           ${
             error
-              ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+              ? 'border-[var(--color-danger)] focus:ring-[var(--color-danger)] focus:border-[var(--color-danger)]'
               : ''
           }`}
       />
       {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
+        <p className="text-xs text-[var(--color-danger)] mt-1">{error}</p>
       )}
     </div>
   );

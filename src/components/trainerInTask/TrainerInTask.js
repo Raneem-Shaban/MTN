@@ -1,36 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Pencil } from 'lucide-react'; // استيراد أيقونة قلم
 import CategoryItem from '../categoryItem/CategoryItem';
+import TrainerSelectModal from '../modals/TrainerSelectModal'; // استيراد المودال الجديد
 import '../../App.css';
 
-const TrainerInTask = ({ name, categories, onDropCategory, isResetting }) => {
+const TrainerInTask = ({ name, delegationName, categories, isResetting, allTrainers }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState('Option 1');
+  const [selected, setSelected] = useState(delegationName || '');
   const [justDropped, setJustDropped] = useState(false);
+  const modalRef = useRef(null);
 
   const colorCycle = ['bg-category-one', 'bg-category-two', 'bg-category-three'];
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const data = e.dataTransfer.getData('text/categories');
-    if (!data) return;
-
-    let incomingCategories = [];
-
-    try {
-      incomingCategories = JSON.parse(data);
-    } catch {
-      return;
-    }
-
-    incomingCategories.forEach((cat) => {
-      if (!categories.includes(cat)) {
-        onDropCategory(name, cat);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setIsOpen(false);
       }
-    });
-
-    setJustDropped(true);
-    setTimeout(() => setJustDropped(false), 300);
-  };
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -38,59 +28,52 @@ const TrainerInTask = ({ name, categories, onDropCategory, isResetting }) => {
 
   return (
     <div
-      onDrop={handleDrop}
       onDragOver={handleDragOver}
-      className={`w-36 rounded-lg bg-[var(--color-trainer-task)] p-4 text-center shadow-md transition-transform duration-300 ${
-        justDropped ? 'scale-105 bg-green-100' : ''
-      }`}
+      className={`w-36 h-full rounded-lg bg-[var(--color-trainer-task)] p-4 text-center shadow-md transition-transform duration-300 ${justDropped ? 'scale-105 bg-green-100' : ''
+        }`}
     >
-      <h3 className="text-lg font-semibold text-[var(--color-text-main)] mb-2">{name}</h3>
-      <div className="border-t border-white my-2" />
+      <div className="flex flex-col h-full">
+        <h3 className="text-lg font-semibold text-[var(--color-text-main)] mb-2">{name}</h3>
+        <div className="border-t border-white my-2" />
 
-      <div className="relative text-left w-full mb-3">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full text-[16px] font-semibold text-[var(--color-text-main)] flex items-center justify-between px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          {selected}
-          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
-        {isOpen && (
-          <ul className="absolute left-0 mt-1 w-full bg-[var(--color-bg)] rounded shadow-lg z-10 text-sm text-[var(--color-text-main)]">
-            {['Option 1', 'Option 2', 'Option 3'].map((option) => (
-              <li
-                key={option}
-                className="px-3 py-2 hover:bg-[var(--color-surface)] cursor-pointer"
-                onClick={() => {
-                  setSelected(option);
-                  setIsOpen(false);
-                }}
-              >
-                {option}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <div className="border-t border-white my-3" />
-
-      <div className="space-y-3">
-        {categories.map((cat, index) => (
-          <div
-            key={cat}
-            draggable
-            onDragStart={(e) =>
-              e.dataTransfer.setData('category-from-trainer', JSON.stringify({ cat, trainer: name }))
-            }
-            className={`cursor-pointer ${isResetting ? 'animate-pulse' : ''}`}
+        {/* عرض المفوض مع زر أيقونة تعديل */}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[13px] text-[var(--color-text-main)]">{selected || 'No Delegation'}</span>
+          <button
+            onClick={() => setIsOpen(true)}
+            aria-label="Edit Delegation"
+            className="p-1.5 rounded-full border border-[var(--color-border)] bg-white shadow-sm hover:bg-blue-100 transition text-blue-600 hover:text-blue-800"
           >
-            <CategoryItem name={cat} colorClass={colorCycle[index % colorCycle.length]} />
-          </div>
-        ))}
+            <Pencil size={16} />
+          </button>
+        </div>
+
+        {/* مودال اختيار المدرّب */}
+        {isOpen && (
+          <TrainerSelectModal
+            allTrainers={allTrainers}
+            selected={selected}
+            onSelect={setSelected}
+            onClose={() => setIsOpen(false)}
+          />
+        )}
+
+        <div className="border-t border-white my-3" />
+
+        <div className="space-y-3 mb-3">
+          {categories.map((cat, index) => (
+            <div
+              key={cat.name}
+              className={`cursor-pointer ${isResetting ? 'animate-pulse' : ''}`}
+            >
+              <CategoryItem
+                name={cat.name}
+                description={cat.description}
+                colorClass={colorCycle[index % colorCycle.length]}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
