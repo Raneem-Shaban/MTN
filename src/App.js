@@ -16,6 +16,7 @@ import AppRoutes from './routes/AppRoutes';
 import Layout from './layouts/Layout';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import UserLandingPage from './pages/Landing/UserLandingPage';
 
 function App() {
   useEffect(() => {

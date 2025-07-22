@@ -7,12 +7,11 @@ import AppRoutes from '../routes/AppRoutes';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
 import VerifyCode from '../pages/Auth/VerifyCode';
 import ResetPassword from '../pages/Auth/ResetPassword';
-import ProtectedRoute from '../routes/ProtectedRoute';
 
 
 const Layout = () => {
     const location = useLocation();
-    const hideLayoutRoutes = ['/login', '/forgot-password', '/verify-code', '/reset-password'];
+    const hideLayoutRoutes = ['/login', '/forgot-password','/verify-code','/reset-password'];
 
     const shouldHideLayout = hideLayoutRoutes.includes(location.pathname);
 
@@ -26,6 +25,7 @@ const Layout = () => {
                 {!shouldHideLayout && <Sidebar />}
                 <main className={`flex-1 overflow-auto ${shouldHideLayout ? '' : 'p-6'}`}>
                     <Routes>
+                        <Route path="/landing" element={<UserLandingPage/>} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/verify-code" element={<VerifyCode />} />
