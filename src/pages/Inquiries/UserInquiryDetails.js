@@ -4,7 +4,6 @@ import InquiryCard from '../../components/inquiry/InquiryCard';
 import AnswerCard from '../../components/inquiry/AnswerCard';
 import ReopenInquiryButton from '../../components/inquiry/ReopenInquiryButton';
 
-// Mock data, replace with fetch based on id
 const mockInquiryData = {
   inquiry: {
     id: '01',
@@ -36,18 +35,16 @@ const UserInquiryDetails = () => {
     navigate('/add');
   };
 
-  const inquiryData = mockInquiryData; // Replace with fetch later
+  const inquiryData = mockInquiryData; 
 
   return (
     <div className="p-6 space-y-4">
-      {/* Title before Inquiry */}
       <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-main)' }}>
         Inquiry:
       </h2>
 
       <InquiryCard {...inquiryData.inquiry} />
 
-      {/* Title before Answer */}
       <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-main)' }}>
         Answer:
       </h2>
@@ -56,7 +53,6 @@ const UserInquiryDetails = () => {
         <AnswerCard key={idx} {...ans} />
       ))}
 
-      {/* Improved Footer Section */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-8">
         <span className="text-base font-medium text-[var(--color-text-primary)]">
           Didn't get a satisfying answer?

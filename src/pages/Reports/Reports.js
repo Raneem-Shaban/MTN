@@ -1,4 +1,3 @@
-// pages/Reports.jsx
 import React, { useState } from 'react';
 import ReportFilter from '../../components/reportFilter/ReportFilter';
 import DynamicTable from '../../components/common/tables/DynamicTable';
@@ -15,7 +14,6 @@ const Reports = () => {
     setLoading(true);
     setReportData([]);
 
-    // Simulate fetch
     setTimeout(() => {
       const dummyData = Array.from({ length: 23 }, (_, i) => ({
         id: i + 1,
@@ -48,10 +46,8 @@ const Reports = () => {
         Reports
       </h1>
 
-      {/* Report Filter */}
       <ReportFilter onCreate={handleCreate} />
 
-      {/* Report Table */}
       {loading ? (
         <div className="flex justify-center py-10">
           <FiLoader className="animate-spin text-4xl text-blue-500" />
@@ -71,7 +67,7 @@ const Reports = () => {
             />
             <div className="flex justify-end gap-3">
               <button
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-hover)] text-white text-sm font-medium transition"
+                className="inlizne-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-hover)] text-white text-sm font-medium transition"
               >
                 <FiDownload className="text-lg" />
                 Export Excel

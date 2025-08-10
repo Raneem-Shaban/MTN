@@ -48,7 +48,7 @@ const ticketStatusColors = {
 const UserHome = () => {
   const [selectedTab, setSelectedTab] = useState('All Inquiries');
   const [currentPage, setCurrentPage] = useState(1);
-  const [data, setData] = useState(dummyData); // بدلًا من dummy ثابت
+  const [data, setData] = useState(dummyData); 
   const navigate = useNavigate();
 
   const handleShowClick = (id) => {
@@ -145,7 +145,6 @@ const UserHome = () => {
         )}
       </div>
 
-      {/* Floating Action Button */}
       <FloatingActionButton
         onClick={() => navigate('/add')}
         label="Add Inquiry"

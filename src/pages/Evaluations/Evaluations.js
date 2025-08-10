@@ -48,17 +48,13 @@ const Evaluations = () => {
 
   return (
     <div className="px-6 pt-6 overflow-hidden">
-      {/* العنوان */}
       <h1 className="text-2xl font-bold text-[var(--color-text-main)] mb-4">
         Evaluations
       </h1>
 
-      {/* الفلاتر */}
       <div className="mb-4">
-        {/* يمكنك وضع فلاتر هنا لاحقًا مثل البحث، التصفية حسب الحالة، والتاريخ */}
       </div>
 
-      {/* عرض الاستفسارات أسفل بعضها */}
       <div className="flex flex-col gap-4 max-w-2xl mx-auto">
         {dummyInquiries.map((inquiry) => (
           <div

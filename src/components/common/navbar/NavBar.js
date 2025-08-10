@@ -19,7 +19,6 @@ const NavBar = ({ onSearch }) => {
       clearTimeout(debounceTimeout.current);
     }
 
-    // تأخير تنفيذ البحث 500ms بعد آخر حرف يكتبه المستخدم
     debounceTimeout.current = setTimeout(() => {
       onSearch?.(value.trim());
     }, 500);
@@ -33,7 +32,7 @@ const NavBar = ({ onSearch }) => {
     };
   }, []);
 
-  const showSearch = currentPath !== "/reports";
+const showSearch = currentPath !== "/" && currentPath !== "/reports";
 
   return (
     <header className="h-16 flex items-center justify-between px-7 py-1 bg-[var(--color-bg)] shadow-md w-full">
@@ -66,7 +65,7 @@ const NavBar = ({ onSearch }) => {
                         ? "Search for user"
                         : currentPath === "/trainers"
                           ? "Search for trainer"
-                          : currentPath === "/"
+                          : currentPath === "/inquiries"
                             ? "Search for inquiry"
                             : "Search..."
               }

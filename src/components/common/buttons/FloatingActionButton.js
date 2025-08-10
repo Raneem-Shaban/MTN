@@ -19,7 +19,6 @@ const FloatingActionButton = ({
         setIsPressed(false);
       }}
     >
-      {/* Tooltip label */}
       {isHovered && (
         <div
           className="px-3 py-1 rounded-md text-sm shadow-lg transition-all duration-200"
@@ -33,7 +32,6 @@ const FloatingActionButton = ({
         </div>
       )}
 
-      {/* FAB button */}
       <button
         title={title}
         onClick={onClick}

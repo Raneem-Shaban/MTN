@@ -19,7 +19,7 @@ const OutlineButton = ({ title, color = 'secondary', onClick }) => {
 
   return (
     <button
-      onClick={onClick}  // <-- Add this line
+      onClick={onClick} 
       className={clsx(
         'rounded-full font-medium text-sm',
         'px-2 py-1 md:px-4 md:py-1.5',
@@ -39,7 +39,7 @@ const OutlineButton = ({ title, color = 'secondary', onClick }) => {
 OutlineButton.propTypes = {
   title: PropTypes.string.isRequired,
   color: PropTypes.oneOf(['secondary', 'danger']),
-  onClick: PropTypes.func, // Add this for prop validation
+  onClick: PropTypes.func,
 };
 
 export default OutlineButton;

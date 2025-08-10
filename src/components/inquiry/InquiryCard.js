@@ -13,16 +13,12 @@ const InquiryCard = ({ id, title, body, status, category, date, attachments }) =
     return (
         <div className="bg-[var(--color-bg)] rounded-xl shadow-sm p-5 md:p-6 space-y-4">
 
-            {/* لف الأيقونة مع باقي المحتوى في صف أفقي */}
             <div className="flex items-start gap-3 rtl:flex-row-reverse">
-                {/* الأيقونة  */}
                 <div className="flex-shrink-0 mt-1">
                     <FiSearch className="text-[36px] text-[var(--color-text-main)]" />
                 </div>
 
-                {/* لف باقي المحتوى مع مسافة بادئة من اليسار */}
                 <div className="flex flex-col space-y-4 flex-1">
-                    {/* Question and Date */}
                     <div className="space-y-1">
                         <div className="text-xl font-medium text-[var(--color-text-main)]">
                             # {id}
@@ -35,14 +31,12 @@ const InquiryCard = ({ id, title, body, status, category, date, attachments }) =
                         </div>
                     </div>
 
-                    {/* Attachments */}
                     {attachments && attachments.length > 0 && (
                         <div>
                             <AttachmentList attachments={attachments} />
                         </div>
                     )}
 
-                    {/* Status and Category */}
                     <div className="flex flex-wrap items-center text-[14px] text-[var(--color-text-muted)] gap-x-6 gap-y-2">
                         <div className="flex items-center gap-1">
                             <span>Status:</span>

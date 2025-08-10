@@ -15,7 +15,6 @@ const AnswerCard = ({
     return (
         <div className="bg-white rounded-lg shadow p-5 md:p-6 space-y-4">
 
-            {/* الرأس: صورة واسم ودور */}
             <div className="flex items-center gap-3">
                 <img
                     src={trainerAvatar}
@@ -30,16 +29,12 @@ const AnswerCard = ({
                 </div>
             </div>
 
-            {/* لف جميع المكونات تحت رول المدرب في Div واحدة مع مسافة من اليسار */}
             <div className="pl-16 space-y-4">
-                {/* نص الجواب */}
                 <p className="text-[17px] md:text-[18px] font-medium text-[var(--color-text-main)] leading-relaxed break-words">
                     {answerText}
-                    {/* التاريخ */}
                     <div className="text-xs text-[var(--color-text-muted)]">{date}</div>
                 </p>
 
-                {/* المرفقات */}
                 {attachments.length > 0 && (
                     <div className="flex items-center gap-2 text-[var(--color-text-secondary)] text-sm">
                         <FaPaperclip className="text-[var(--color-text-accent)]" />
@@ -47,7 +42,6 @@ const AnswerCard = ({
                     </div>
                 )}
 
-                {/* التقييم مع نص "Rate this answer:" */}
                 <div className="flex items-center gap-3 text-sm font-medium text-[var(--color-text-accent)]">
                     <span>Rate this answer:</span>
                     <RatingStars value={rating} onChange={onRatingChange} />

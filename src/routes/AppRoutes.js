@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import UserLandingPage from '../pages/Landing/UserLandingPage';
 
 const AppRoutes = () => {
-  const userRole = useSelector((state) => state.auth.user?.role_id); // افترضنا إنه موجود بالـ Redux
+  const userRole = useSelector((state) => state.auth.user?.role_id); 
 
   return (
     <Routes>

@@ -1,4 +1,3 @@
-// src/components/sections/HowItWorksSection.js
 import InfoCard from '../common/cards/InfoCard';
 import Container from '../layout/Container';
 import { FaPaperPlane, FaSearch, FaStar } from 'react-icons/fa';
@@ -33,12 +32,10 @@ const HowItWorksSection = () => {
   useEffect(() => {
     let timeouts = [];
 
-    // تحريك الخط إلى كل بطاقة بالتسلسل
     steps.forEach((_, i) => {
       timeouts.push(setTimeout(() => setActiveStep(i), i * 700));
     });
 
-    // توقّف عند البطاقة الثانية (الوسطى)
     timeouts.push(setTimeout(() => setActiveStep(1), steps.length * 700));
 
     return () => timeouts.forEach(clearTimeout);
@@ -57,10 +54,8 @@ const HowItWorksSection = () => {
         </motion.h2>
 
         <div className="relative w-full max-w-6xl mx-auto">
-          {/* الخط الكامل */}
           <div className="absolute top-1/2 left-[8%] right-[8%] h-1 bg-[var(--color-primary)] z-0 rounded-full transform -translate-y-1/2" />
 
-          {/* البطاقات */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start justify-items-center relative z-10">
             {steps.map((step, index) => {
               const isActive = index === activeStep || (activeStep === 1 && index === 1);

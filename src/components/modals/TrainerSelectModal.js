@@ -1,6 +1,6 @@
 import React from 'react';
 import { IoClose } from 'react-icons/io5';
-import { Users } from 'lucide-react'; // 👈 بديل عن LayoutDashboard
+import { Users } from 'lucide-react';
 
 const TrainerSelectModal = ({ allTrainers, selected, onSelect, onClose }) => {
   if (!allTrainers || !Array.isArray(allTrainers)) return null;
@@ -8,10 +8,9 @@ const TrainerSelectModal = ({ allTrainers, selected, onSelect, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div className="bg-[var(--color-bg)] rounded-lg w-full max-w-md md:max-w-lg lg:max-w-xl relative max-h-[90vh] flex flex-col">
-        {/* Header Icon and Close Button */}
         <div className="flex justify-center mt-5">
           <div className="bg-[var(--color-trainer-task)] p-4 rounded-full border-4 border-white shadow-md -mt-12">
-            <Users size={24} className="text-[var(--color-secondary)]" /> {/* 👈 التغيير هنا */}
+            <Users size={24} className="text-[var(--color-secondary)]" />
           </div>
           <button
             onClick={onClose}
@@ -21,7 +20,6 @@ const TrainerSelectModal = ({ allTrainers, selected, onSelect, onClose }) => {
           </button>
         </div>
 
-        {/* Trainer List */}
         <div className="overflow-y-auto px-6 pt-4 pb-2 space-y-3">
           <h2 className="text-xl font-semibold text-[var(--color-text-main)] mb-2 text-center">
             Select Trainer
@@ -34,9 +32,8 @@ const TrainerSelectModal = ({ allTrainers, selected, onSelect, onClose }) => {
                   onSelect(trainer.name);
                   onClose();
                 }}
-                className={`px-4 py-2 rounded-md cursor-pointer border flex justify-between items-center hover:bg-[var(--color-hover)] transition ${
-                  selected === trainer.name ? 'bg-[var(--color-hover)] font-semibold' : ''
-                }`}
+                className={`px-4 py-2 rounded-md cursor-pointer border flex justify-between items-center hover:bg-[var(--color-hover)] transition ${selected === trainer.name ? 'bg-[var(--color-hover)] font-semibold' : ''
+                  }`}
               >
                 <span>{trainer.name}</span>
                 {selected === trainer.name && (
@@ -55,7 +52,6 @@ const TrainerSelectModal = ({ allTrainers, selected, onSelect, onClose }) => {
           </ul>
         </div>
 
-        {/* Footer Buttons */}
         <div className="px-6 py-4 mt-auto border-t bg-[var(--color-bg)] rounded-b-lg">
           <button
             onClick={onClose}

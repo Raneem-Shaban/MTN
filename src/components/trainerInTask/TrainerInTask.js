@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Pencil } from 'lucide-react'; // استيراد أيقونة قلم
+import { Pencil } from 'lucide-react'; 
 import CategoryItem from '../categoryItem/CategoryItem';
-import TrainerSelectModal from '../modals/TrainerSelectModal'; // استيراد المودال الجديد
+import TrainerSelectModal from '../modals/TrainerSelectModal';
 import '../../App.css';
 
 const TrainerInTask = ({ name, delegationName, categories, isResetting, allTrainers }) => {
@@ -36,7 +36,6 @@ const TrainerInTask = ({ name, delegationName, categories, isResetting, allTrain
         <h3 className="text-lg font-semibold text-[var(--color-text-main)] mb-2">{name}</h3>
         <div className="border-t border-white my-2" />
 
-        {/* عرض المفوض مع زر أيقونة تعديل */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-[13px] text-[var(--color-text-main)]">{selected || 'No Delegation'}</span>
           <button
@@ -48,7 +47,6 @@ const TrainerInTask = ({ name, delegationName, categories, isResetting, allTrain
           </button>
         </div>
 
-        {/* مودال اختيار المدرّب */}
         {isOpen && (
           <TrainerSelectModal
             allTrainers={allTrainers}

@@ -1,4 +1,3 @@
-// src/pages/Reports/ReportsWrapper.jsx
 import React from 'react';
 import { useSelector } from 'react-redux';
 import Reports from '../Reports/Reports';

@@ -1,32 +1,21 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import React, { useState, useMemo, useCallback } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../store/slices/authSlice';
-import { useNavigate } from 'react-router-dom';
 import axios from '../../../utils/axiosConfig';
 import { API_BASE_URL } from '../../../constants/constants';
 import { toast } from 'react-toastify';
 import {
-  FaHome,
-  FaUsers,
-  FaChartBar,
-  FaQuestionCircle,
-  FaChalkboardTeacher,
-  FaListAlt,
-  FaFolderOpen,
-  FaClipboardCheck,
-  FaTasks,
-  FaStar,
-  FaSignOutAlt,
+  FaHome, FaUsers, FaChartBar, FaQuestionCircle, FaChalkboardTeacher,
+  FaListAlt, FaFolderOpen, FaClipboardCheck, FaTasks, FaStar, FaSignOutAlt
 } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
 
-// جميع العناصر الممكنة
+// قائمة التنقل
 const allNavItems = [
-  { label: 'Home', icon: <FaHome />, path: '/', roles: [1, 2, 4, 5] },
+  { label: 'Home', icon: <FaHome />, path: '/', roles: [1, 2] },
+  { label: 'Inquiries', icon: <FaQuestionCircle />, path: '/inquiries', roles: [1, 2, 3] },
   { label: 'Users', icon: <FaUsers />, path: '/users', roles: [1, 2] },
   { label: 'Reports', icon: <FaChartBar />, path: '/reports', roles: [1, 2, 3] },
-  { label: 'Inquiries', icon: <FaQuestionCircle />, path: '/inquiries', roles: [3] },
   { label: 'Trainers', icon: <FaChalkboardTeacher />, path: '/trainers', roles: [1, 2] },
   { label: 'Sections', icon: <FaListAlt />, path: '/sections', roles: [1, 2] },
   { label: 'Categories', icon: <FaFolderOpen />, path: '/categories', roles: [1, 2] },
@@ -37,19 +26,22 @@ const allNavItems = [
 ];
 
 const Sidebar = () => {
-  const token = useSelector((state) => state.auth.user?.token);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // 🔁 استخدام useSelector لمرة واحدة فقط
+  const { token, role_id: roleId } = useSelector((state) => state.auth.user || {});
+
   const [isOpen, setIsOpen] = useState(false);
-  const toggleSidebar = () => setIsOpen(prev => !prev);
+  const toggleSidebar = useCallback(() => setIsOpen(prev => !prev), []);
 
-  const roleId = useSelector((state) => state.auth.user?.role_id);
+  // 🧠 تصفية العناصر بناءً على دور المستخدم باستخدام useMemo
+  const filteredNavItems = useMemo(() => {
+    return allNavItems.filter((item) => item.roles.includes(roleId));
+  }, [roleId]);
 
-  const filteredNavItems = allNavItems.filter((item) =>
-    item.roles.includes(roleId)
-  );
-
-  const handleLogout = async () => {
+  // ⛔️ handleLogout داخل useCallback لمنع إعادة تعريفه
+  const handleLogout = useCallback(async () => {
     try {
       await axios.post(`${API_BASE_URL}/api/logout`, {}, {
         headers: {
@@ -60,11 +52,11 @@ const Sidebar = () => {
 
       dispatch(logout());
       toast.success("Logout successful");
-      navigate('/login');
+      window.location.href = '/login';
     } catch (error) {
       toast.error(error.response?.data?.message || 'Logout failed');
     }
-  };
+  }, [dispatch, navigate, token]);
 
   return (
     <div className="h-full bg-[var(--color-bg)] border-r w-16 sm:w-60 py-8 shadow-md transition-all duration-300">
@@ -84,9 +76,10 @@ const Sidebar = () => {
               key={index}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 text-base font-medium transition-all duration-200 pl-3 sm:pl-6 pr-3 sm:pr-4 py-2 w-full ${isActive
-                  ? 'text-[var(--color-primary)] border-l-4 border-[var(--color-primary)] bg-yellow-50'
-                  : 'text-[var(--color-text-muted)] border-l-4 border-transparent hover:text-[var(--color-dark-gray)] hover:bg-[var(--color-light-gray)]'
+                `flex items-center gap-3 text-base font-medium transition-all duration-200 pl-3 sm:pl-6 pr-3 sm:pr-4 py-2 w-full ${
+                  isActive
+                    ? 'text-[var(--color-primary)] border-l-4 border-[var(--color-primary)] bg-yellow-50'
+                    : 'text-[var(--color-text-muted)] border-l-4 border-transparent hover:text-[var(--color-dark-gray)] hover:bg-[var(--color-light-gray)]'
                 }`
               }
             >

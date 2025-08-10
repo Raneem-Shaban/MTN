@@ -1,4 +1,3 @@
-// src/components/sections/UsefulLinksSection.js
 import InfoCard from '../common/cards/InfoCard';
 import { FaQuestionCircle, FaBook, FaHeadphones } from 'react-icons/fa';
 import { motion } from 'framer-motion';

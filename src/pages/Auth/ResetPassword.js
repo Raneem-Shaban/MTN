@@ -53,7 +53,6 @@ export default function ResetPassword() {
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-primary)]">
             <div className='w-full max-w-6xl mx-auto rounded-lg overflow-hidden '>
                 <div className="flex flex-col min-h-[80vh] md:flex-row bg-white m-8">
-                    {/* Left Section */}
                     <div className="md:w-1/4 flex flex-col items-center justify-center bg-[var(--color-surface)] p-8 shadow-md">
                         <h1 className="text-3xl font-semibold text-gray-800 mb-2">Train Track</h1>
                         <img
@@ -63,12 +62,10 @@ export default function ResetPassword() {
                         />
                     </div>
 
-                    {/* Right Section */}
                     <div className="flex-1 flex items-center justify-center bg-white p-6">
                         <div className="w-full max-w-md">
                             <h2 className="text-2xl font-semibold mb-6">Reset Password</h2>
                             <form className="space-y-4" onSubmit={handleReset}>
-                                {/* New Password */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">New Password</label>
                                     <div className="relative">
@@ -89,7 +86,6 @@ export default function ResetPassword() {
                                     </div>
                                 </div>
 
-                                {/* Confirm Password */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
                                     <div className="relative">

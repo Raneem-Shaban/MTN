@@ -29,7 +29,6 @@ const UserAddInquiry = () => {
     <div className="px-6 md:px-10">
       <div className="max-w-2xl space-y-6">
 
-        {/* Title */}
         <div className="flex items-center gap-3 rtl:flex-row-reverse">
           <FiSearch className="text-[32px] text-[var(--color-text-primary)]" />
           <h1 className="text-xl md:text-2xl font-semibold text-[var(--color-text-primary)]">
@@ -37,7 +36,6 @@ const UserAddInquiry = () => {
           </h1>
         </div>
 
-        {/* Inquiry Text */}
         <textarea
           className="w-full bg-white border border-gray-200 rounded-xl shadow-sm p-4 focus:outline-none focus:ring focus:border-blue-300 text-[15px] leading-relaxed resize-none"
           placeholder="Write your inquiry here..."
@@ -46,7 +44,6 @@ const UserAddInquiry = () => {
           onChange={(e) => setBody(e.target.value)}
         />
 
-        {/* Category */}
         <div className="flex flex-col space-y-2">
           <label className="text-sm font-medium text-[var(--color-text-secondary)]">Category</label>
           <select
@@ -61,7 +58,6 @@ const UserAddInquiry = () => {
           </select>
         </div>
 
-        {/* Attachments */}
         <div className="flex flex-col space-y-2">
           <label className="text-sm font-medium text-[var(--color-text-secondary)]">Attachments</label>
           <label className="inline-flex items-center gap-2 cursor-pointer text-[var(--color-secondary)]">
@@ -95,7 +91,6 @@ const UserAddInquiry = () => {
           )}
         </div>
 
-        {/* Submit Button */}
         <div>
           <button
             onClick={handleSubmit}

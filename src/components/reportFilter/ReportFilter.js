@@ -1,4 +1,3 @@
-// components/report/ReportFilter.jsx
 import React, { useState } from 'react';
 import { FiCalendar, FiBarChart2, FiPlus } from 'react-icons/fi';
 
@@ -16,7 +15,6 @@ const ReportFilter = ({ onCreate }) => {
     return (
         <div className="bg-[var(--color-bg)] border shadow-sm rounded-2xl p-6 md:p-8 space-y-6 max-w-full">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Start Date */}
                 <div className="flex flex-col">
                     <label className="text-sm text-[var(--color-text-accent)] font-medium mb-2 flex items-center gap-1">
                         <FiCalendar className="text-[var(--color-text-accent)]" />
@@ -30,7 +28,6 @@ const ReportFilter = ({ onCreate }) => {
                     />
                 </div>
 
-                {/* End Date */}
                 <div className="flex flex-col">
                     <label className="text-sm text-[var(--color-text-accent)] font-medium mb-2 flex items-center gap-1">
                         <FiCalendar className="text-[var(--color-text-accent)]" />
@@ -44,7 +41,6 @@ const ReportFilter = ({ onCreate }) => {
                     />
                 </div>
 
-                {/* Report Type */}
                 <div className="flex flex-col">
                     <label className="text-sm text-[var(--color-text-accent)] font-medium mb-2 flex items-center gap-1">
                         <FiBarChart2 className="text-[var(--color-text-accent)]" />
@@ -74,7 +70,6 @@ const ReportFilter = ({ onCreate }) => {
                 </div>
             </div>
 
-            {/* Create Button */}
             <div className="flex justify-end">
                 <button
                     onClick={handleCreate}

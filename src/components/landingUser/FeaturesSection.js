@@ -15,7 +15,6 @@ const cardVariants = {
 const FeaturesSection = () => (
   <section className="bg-[var(--color-white)] py-20">
     <Container className="text-center">
-      {/* Title section */}
       <motion.h2
         className="text-3xl font-bold mb-14"
         initial={{ opacity: 0, y: 30 }}
@@ -26,9 +25,8 @@ const FeaturesSection = () => (
         System Features
       </motion.h2>
 
-      {/* Card grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center mx-auto">
-        {[  // Array to iterate through each card
+        {[  
           {
             icon: <FaComments />,
             title: 'Inquiry Management',

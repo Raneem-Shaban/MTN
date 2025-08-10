@@ -16,95 +16,97 @@ import HomeWrapper from "../pages/HomeWrapper/HomeWrapper";
 import UserLandingPage from "../pages/Landing/UserLandingPage";
 import UserInquiryDetails from "../pages/Inquiries/UserInquiryDetails"
 import UserAddInquery from "../pages/Inquiries/UserAddInquery"
+import InquiriresWrapper from "../pages/Inquiries/InquiriresWrapper/InquiriresWrapper";
+import Login from "../pages/Auth/Login";
+import InquiryDetails from "../pages/Inquiries/InquiryDetails";
 
 const routes = [
-  // home routes
+
+  {
+    path: '/login',
+    element: <Login />,
+    roles: [1, 2, 3, 4, 5],
+  },
   {
     path: '/',
     element: <HomeWrapper />,
-    roles: [1, 2, 4, 5], // الكل باستثناء المدرب
+    roles: [1, 2, 4, 5],
   },
 
-  // users
   {
     path: '/users',
     element: <Users />,
-    roles: [1, 2], // مدير، مشرف
+    roles: [1, 2],
   },
 
-  // trainers
   {
     path: '/trainers',
     element: <Trainers />,
-    roles: [1, 2], // مدير، مشرف
+    roles: [1, 2],
   },
 
-  // sections
   {
     path: '/sections',
     element: <Sections />,
-    roles: [1, 2], // مدير، مشرف
+    roles: [1, 2],
   },
 
-  // categories
   {
     path: '/categories',
     element: <Categories />,
-    roles: [1, 2], // مدير، مشرف
+    roles: [1, 2],
   },
 
-  // evaluations
   {
     path: '/evaluations',
     element: <Evaluations />,
-    roles: [1, 2], // مدير، مشرف
+    roles: [1, 2],
   },
 
-  // tasks
   {
     path: '/tasks',
     element: <Tasks />,
-    roles: [1, 2], // مدير، مشرف
+    roles: [1, 2],
   },
 
-  // inquiries
   {
     path: '/inquiries',
-    element: <Inquiries />,
-    roles: [3], // مدرب فقط
+    element: <InquiriresWrapper />,
+    roles: [1, 2, 3],
   },
+  {
+  path: '/details/:id',
+  element: <InquiryDetails/>,
+  roles: [1,2,3],
+},
 
-  // inquirey detail 
   {
     path: '/details/:id',
     element: <UserInquiryDetails />,
     roles: [4, 5],
   },
-  // add inquirey 
   {
     path: '/add',
     element: <UserAddInquery />,
     roles: [4, 5],
   },
-  // reports
+
   {
     path: '/reports',
-    element: <ReportsWrapper />, // كومبوننت ذكي يعرض حسب الدور
-    roles: [1, 2, 3], // كل من يملك حق الدخول
+    element: <ReportsWrapper />,
+    roles: [1, 2, 3],
   },
 
-  // favorite
   {
     path: '/favorite',
     element: <Favorite />,
-    roles: [4, 5], // مستخدم، مساعد
+    roles: [4, 5],
   },
 
-  // unauthorized (مسار مخصص لعرض رسالة في حال عدم وجود صلاحية)
   {
     path: '/unauthorized',
     element: <Unauthorized />,
-    roles: [1, 2, 3, 4, 5], // الكل يمكنه رؤية هذه الصفحة
+    roles: [1, 2, 3, 4, 5],
   },
 ];
 
