@@ -22,7 +22,7 @@ const routes = [
   {
     path: '/',
     element: <HomeWrapper />,
-    roles: [1, 2, 4, 5], // الكل باستثناء المدرب
+    roles: [1, 2, 3, 4, 5], // الكل باستثناء المدرب
   },
 
   // users

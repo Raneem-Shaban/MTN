@@ -23,7 +23,7 @@ import { useSelector } from 'react-redux';
 
 // جميع العناصر الممكنة
 const allNavItems = [
-  { label: 'Home', icon: <FaHome />, path: '/', roles: [1, 2, 4, 5] },
+  { label: 'Home', icon: <FaHome />, path: '/', roles: [1, 2, 3, 4, 5] },
   { label: 'Users', icon: <FaUsers />, path: '/users', roles: [1, 2] },
   { label: 'Reports', icon: <FaChartBar />, path: '/reports', roles: [1, 2, 3] },
   { label: 'Inquiries', icon: <FaQuestionCircle />, path: '/inquiries', roles: [3] },

@@ -8,7 +8,7 @@ const AnswerCard = ({
     trainerAvatar = '/assets/img/default-avatar.png',
     answerText,
     date,
-    rating = 0,
+    rating,
     attachments = [],
     onRatingChange,
 }) => {

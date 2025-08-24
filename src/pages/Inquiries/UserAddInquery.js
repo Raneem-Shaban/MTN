@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
-import { FiSearch, FiPaperclip, FiX } from 'react-icons/fi';
-
-const categories = ['General', 'Technical', 'Offers', 'Billing'];
+import React, { useState } from "react";
+import { FiSearch, FiPaperclip, FiX } from "react-icons/fi";
+import axios from "axios";
+import { toast } from "react-toastify";
+import CategoryDropdown from "../../components/common/dropdown/CategoryDropdown";
+import { API_BASE_URL } from "../../constants/constants";
 
 const UserAddInquiry = () => {
-  const [body, setBody] = useState('');
-  const [category, setCategory] = useState('');
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [category, setCategory] = useState("");
   const [attachments, setAttachments] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleAttachmentChange = (e) => {
     const files = Array.from(e.target.files);
@@ -17,19 +21,54 @@ const UserAddInquiry = () => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
-    console.log({
-      body,
-      category,
-      attachments,
-    });
+  const handleSubmit = async () => {
+    if (!title || !body || !category) {
+      toast.error("Please fill all required fields (Category, Title, Body).");
+      return;
+    }
+
+    console.log("Submitting Inquiry:", { title, body, category, attachments });
+
+    const token = localStorage.getItem("token");
+
+    const formData = new FormData();
+    formData.append("category_id", category);
+    formData.append("title", title);
+    formData.append("body", body);
+    attachments.forEach((file) => formData.append("attachments[]", file));
+
+    try {
+      setLoading(true);
+      const res = await axios.post(`${API_BASE_URL}/api/inquiries`, formData, {
+        headers: { 
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`
+        },
+      });
+
+      console.log("API Response:", res.data);
+      toast.success(res.data.message || "Inquiry submitted successfully!");
+
+      // Reset form
+      setTitle("");
+      setBody("");
+      setCategory("");
+      setAttachments([]);
+    } catch (err) {
+      console.error("Submission error:", err);
+      toast.error("Something went wrong while submitting inquiry.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // زر Submit يكون disabled إذا أي حقل إلزامي فارغ
+  const isSubmitDisabled = !title || !body || !category || loading;
 
   return (
     <div className="px-6 md:px-10">
       <div className="max-w-2xl space-y-6">
-
-        {/* Title */}
+        {/* Header */}
         <div className="flex items-center gap-3 rtl:flex-row-reverse">
           <FiSearch className="text-[32px] text-[var(--color-text-primary)]" />
           <h1 className="text-xl md:text-2xl font-semibold text-[var(--color-text-primary)]">
@@ -37,34 +76,48 @@ const UserAddInquiry = () => {
           </h1>
         </div>
 
-        {/* Inquiry Text */}
-        <textarea
-          className="w-full bg-white border border-gray-200 rounded-xl shadow-sm p-4 focus:outline-none focus:ring focus:border-blue-300 text-[15px] leading-relaxed resize-none"
-          placeholder="Write your inquiry here..."
-          rows={5}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-        />
+        {/* Category Selector */}
+        <div className="flex flex-col space-y-3">
+          <label className="text-sm font-medium text-[var(--color-text-secondary)]">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <CategoryDropdown value={category} onChange={setCategory} />
+        </div>
 
-        {/* Category */}
+        {/* Title Field */}
         <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-[var(--color-text-secondary)]">Category</label>
-          <select
-            className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 focus:outline-none focus:ring focus:border-blue-300"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">Select a category</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
+          <label className="text-sm font-medium text-[var(--color-text-secondary)]">
+            Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            placeholder="Enter a concise title..."
+            className="w-full bg-white border border-gray-200 rounded-xl shadow-md p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[15px]"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+
+        {/* Inquiry Body */}
+        <div className="flex flex-col space-y-2">
+          <label className="text-sm font-medium text-[var(--color-text-secondary)]">
+            Inquiry <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            className="w-full bg-white border border-gray-200 rounded-xl shadow-md p-4 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[15px] leading-relaxed resize-none"
+            placeholder="Write your inquiry here..."
+            rows={5}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
         </div>
 
         {/* Attachments */}
         <div className="flex flex-col space-y-2">
-          <label className="text-sm font-medium text-[var(--color-text-secondary)]">Attachments</label>
-          <label className="inline-flex items-center gap-2 cursor-pointer text-[var(--color-secondary)]">
+          <label className="text-sm font-medium text-[var(--color-text-secondary)]">
+            Attachments (Optional)
+          </label>
+          <label className="inline-flex items-center gap-2 cursor-pointer text-[var(--color-secondary)] hover:text-[var(--color-primary)] transition">
             <FiPaperclip className="text-lg" />
             <span>Add Attachments</span>
             <input
@@ -99,13 +152,12 @@ const UserAddInquiry = () => {
         <div>
           <button
             onClick={handleSubmit}
-            disabled={!body || !category}
-            className="bg-[var(--color-primary)] text-white rounded-xl px-5 py-3 hover:bg-[var(--color-primary)] transition disabled:opacity-50"
+            disabled={isSubmitDisabled}
+            className="w-full bg-[var(--color-primary)] text-white rounded-xl px-5 py-3 hover:opacity-90 transition disabled:opacity-50 shadow-lg"
           >
-            Submit Inquiry
+            {loading ? "Submitting..." : "Submit Inquiry"}
           </button>
         </div>
-
       </div>
     </div>
   );

@@ -4,27 +4,11 @@ import Pagination from '../../components/common/pagination/Pagination';
 import FilterTabs from '../../components/common/filters/FilterTabs';
 import { StatusBadge } from '../../components/common/badges/StatusBadge';
 import OutlineButton from '../../components/common/buttons/OutlineButton';
+import axios from 'axios';
+import { API_BASE_URL } from '../../constants/constants';
+import { formatDate } from '../../../src/utils/utils';
 
 const itemsPerPage = 5;
-
-const dummyData = [
-  { id: '01', title: 'طلب تفعيل خدمة الإنترنت', status: 'Open', trainer: 'Raneem', category: 'Internet', isFavorite: true },
-  { id: '02', title: 'مشكلة في سرعة النت', status: 'Closed', trainer: 'Nour', category: 'MTN Speed', isFavorite: true },
-  { id: '03', title: 'كيفية إعادة ضبط الراوتر', status: 'Pending', trainer: 'Mhd', category: 'Router', isFavorite: true },
-  { id: '04', title: 'سؤال حول الفاتورة', status: 'Open', trainer: 'Salma', category: 'Billing', isFavorite: true },
-  { id: '05', title: 'إلغاء خدمة الإعلانات', status: 'Closed', trainer: 'Ahmad', category: 'ADS', isFavorite: true },
-  { id: '06', title: 'مشكلة في الكابل الضوئي', status: 'Pending', trainer: 'Lina', category: 'Fiber', isFavorite: true },
-  { id: '07', title: 'هل يتم استرجاع البيانات؟', status: 'Open', trainer: 'Omar', category: 'Data Recovery', isFavorite: true },
-  { id: '08', title: 'مشاكل في بث التلفاز', status: 'Closed', trainer: 'Yasmin', category: 'TV', isFavorite: true },
-  { id: '09', title: 'طلب الاشتراك في باقة جديدة', status: 'Pending', trainer: 'Hassan', category: 'Packages', isFavorite: true },
-  { id: '10', title: 'تغيير كلمة مرور الحساب', status: 'Open', trainer: 'Tala', category: 'Account', isFavorite: true },
-  { id: '11', title: 'مشكلة في تسجيل الدخول', status: 'Closed', trainer: 'Rami', category: 'Account', isFavorite: true },
-  { id: '12', title: 'طلب معلومات إضافية', status: 'Pending', trainer: 'Mona', category: 'Support', isFavorite: true },
-  { id: '13', title: 'إلغاء خدمة سابقة', status: 'Open', trainer: 'Khaled', category: 'Services', isFavorite: true },
-  { id: '14', title: 'الاستفسار عن عروض الصيف', status: 'Closed', trainer: 'Sami', category: 'Offers', isFavorite: true },
-  { id: '15', title: 'كيفية استبدال الجهاز', status: 'Pending', trainer: 'Dana', category: 'Devices', isFavorite: true },
-];
-
 
 const ticketStatusColors = {
   Open: { bg: 'var(--color-status-open-bg)', text: 'var(--color-status-open)' },
@@ -32,27 +16,64 @@ const ticketStatusColors = {
   Pending: { bg: 'var(--color-status-pending-bg)', text: 'var(--color-status-pending)' },
 };
 
+// 🔹 دالة لتقصير النصوص
+const truncate = (text, maxLength = 20) => {
+  if (!text) return '';
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+};
+
 const Favorite = () => {
   const [selectedTab, setSelectedTab] = useState('All Inquiries');
   const [currentPage, setCurrentPage] = useState(1);
-  const [data, setData] = useState(dummyData);
+  const [data, setData] = useState([]);
 
-  const handleShowClick = (id) => {
-    console.log('Show details for:', id);
-  };
+  // 🔹 جلب البيانات المفضلة
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      const token = localStorage.getItem('token');
+      console.log("🚀 Token: ", token); // طباعة التوكن للتحقق
 
-  const removeFromFavorite = (id) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isFavorite: false } : item
-      )
-    );
-  };
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/myFavourites`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
+        console.log("📝 API Response: ", response.data); // طباعة البيانات المستلمة من الـ API
+
+        const favorites = Array.isArray(response.data) ? response.data : [];
+
+        const formattedFavorites = favorites.map((inq) => ({
+          id: inq.inquiry.id,
+          title: truncate(inq.inquiry.title, 25),
+          body: truncate(inq.inquiry.body, 40),
+          status: inq.status?.name || 'Unknown',
+          trainer: truncate(inq.assigneeUser?.name || 'Unassigned', 20),
+          category: truncate(inq.category?.name || 'N/A', 15),
+          user: truncate(inq.user.name || 'Unknown', 20),
+          createdAt: formatDate(inq.inquiry.created_at),
+          isFavorite: true,
+        }));
+
+        console.log("🧩 Formatted Favorites: ", formattedFavorites); // طباعة البيانات بعد التنسيق
+
+        setData(formattedFavorites);
+      } catch (err) {
+        console.error("❌ Error fetching favorites:", err);
+      }
+    };
+
+    fetchFavorites();
+  }, []);
+
+  // 🔹 التعامل مع الفلاتر
   const filteredData =
     selectedTab === 'All Inquiries'
       ? data.filter((item) => item.isFavorite)
       : data.filter((item) => item.isFavorite && item.status === selectedTab);
+
+  console.log("🔍 Filtered Data: ", filteredData); // طباعة البيانات المفلترة
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
@@ -64,6 +85,17 @@ const Favorite = () => {
     setCurrentPage(1);
   }, [selectedTab]);
 
+  // 🔹 إزالة من المفضلة
+  const removeFromFavorite = (id) => {
+    console.log(`🚫 Removing from favorites: ID ${id}`); // طباعة ID عند إزالة من المفضلة
+    setData((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, isFavorite: false } : item
+      )
+    );
+  };
+
+  // 🔹 أعمدة الجدول
   const columns = [
     { header: 'ID', accessor: 'id' },
     { header: 'Title', accessor: 'title' },
@@ -83,7 +115,7 @@ const Favorite = () => {
         <OutlineButton
           title="Show"
           color="primary"
-          onClick={() => handleShowClick(row.id)}
+          onClick={() => console.log('Show details for:', row.id)}
         />
       ),
     },
