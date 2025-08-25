@@ -10,7 +10,6 @@ import FloatingActionButton from '../../components/common/buttons/FloatingAction
 import { formatDate } from '../../../src/utils/utils';
 import { API_BASE_URL } from "../../constants/constants";
 import axios from "axios";
-import Skeleton from 'react-loading-skeleton'; // استيراد مكتبة Skeleton
 
 const itemsPerPage = 4;
 
@@ -21,7 +20,7 @@ const ticketStatusColors = {
   reopened: { bg: 'var(--color-status-open-bg)', text: 'var(--color-status-open)' },
 };
 
-// دالة لتقصير النصوص
+// قص النص
 const truncate = (text, maxLength = 20) => {
   if (!text) return '';
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
@@ -30,43 +29,85 @@ const truncate = (text, maxLength = 20) => {
 const UserHome = () => {
   const [selectedTab, setSelectedTab] = useState('All Inquiries');
   const [currentPage, setCurrentPage] = useState(1);
-  const [data, setData] = useState([]);
-  const [favourites, setFavourites] = useState([]);
+  const [data, setData] = useState([]);          // صفوف الجدول
+  const [favourites, setFavourites] = useState([]); // المفضلات الخام من API
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // يبني خريطة inquiry_id -> قائمة مفضلات (مرتبة) + آخر id
+  const favIndex = useMemo(() => {
+    const byInquiry = new Map();
+    favourites.forEach(f => {
+      if (!byInquiry.has(f.inquiry_id)) byInquiry.set(f.inquiry_id, []);
+      byInquiry.get(f.inquiry_id).push(f);
+    });
+    // رتب حسب created_at ثم id، وخذ الأخير كـ "الأحدث"
+    for (const arr of byInquiry.values()) {
+      arr.sort((a, b) => {
+        const ta = new Date(a.created_at).getTime();
+        const tb = new Date(b.created_at).getTime();
+        if (ta !== tb) return ta - tb;
+        return a.id - b.id;
+      });
+    }
+    const latestId = (inquiryId) => {
+      const arr = byInquiry.get(inquiryId);
+      return arr && arr.length ? arr[arr.length - 1].id : null;
+    };
+    return { byInquiry, latestId };
+  }, [favourites]);
 
   // جلب البيانات
   useEffect(() => {
     const fetchData = async () => {
+      const token = localStorage.getItem('token');
       try {
         setLoading(true);
-        // جلب الاستفسارات
-        const res = await axios.get(`${API_BASE_URL}/api/inquiries`);
-        const inquiries = Array.isArray(res.data) ? res.data : [];
-        console.log("✅ API Response:", inquiries);
 
-        // جلب المفضلة الخاصة بالمستخدم
-        const favRes = await axios.get(`${API_BASE_URL}/api/myFavourites`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        // 1) جلب الاستفسارات
+        const inqRes = await axios.get(`${API_BASE_URL}/api/inquiries`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
-        setFavourites(favRes.data); // تحديث المفضلات
+        const inquiries = Array.isArray(inqRes.data) ? inqRes.data : [];
+        console.log("✅ API Response (inquiries):", inquiries);
 
-        const formatted = inquiries.map((inq) => ({
-          id: inq.inquiry.id,
-          title: truncate(inq.inquiry.title, 25),
-          body: truncate(inq.inquiry.body, 40),
-          status: inq.status?.name || 'Unknown',
-          trainer: truncate(inq.assigneeUser?.name || 'Unassigned', 20),
-          category: truncate(inq.category?.name || 'N/A', 15),
-          user: truncate(inq.user.name || 'Unknown', 20),
-          createdAt: formatDate(inq.inquiry.created_at),
-          isFavorite: favRes.data.some(fav => fav.inquiry_id === inq.inquiry.id), // تحقق من المفضلة
-        }));
+        // 2) جلب مفضلتي
+        const favRes = await axios.get(`${API_BASE_URL}/api/myFavourites`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        const favs = Array.isArray(favRes.data) ? favRes.data : [];
+        console.log("✅ API Response (myFavourites):", favs);
+        setFavourites(favs);
+
+        // 3) مزج الاستفسارات مع حالة المفضلة و favouriteId الأحدث
+        // نبني خريطة سريعة inquiry_id -> أحدث favourite
+        const latestFavByInquiry = new Map();
+        favs.forEach(f => {
+          const prev = latestFavByInquiry.get(f.inquiry_id);
+          if (!prev || f.id > prev.id) latestFavByInquiry.set(f.inquiry_id, f);
+        });
+
+        const formatted = inquiries.map((inq) => {
+          const iid = inq?.inquiry?.id;
+          const fav = latestFavByInquiry.get(iid) || null;
+          return {
+            id: iid,
+            title: truncate(inq?.inquiry?.title, 25),
+            body: truncate(inq?.inquiry?.body, 40),
+            status: inq?.status?.name || 'Unknown',
+            trainer: truncate(inq?.assigneeUser?.name || 'Unassigned', 20),
+            category: truncate(inq?.category?.name || 'N/A', 15),
+            user: truncate(inq?.user?.name || 'Unknown', 20),
+            createdAt: formatDate(inq?.inquiry?.created_at),
+            isFavorite: !!fav,
+            favouriteId: fav?.id ?? null, // مهم للحذف
+          };
+        });
 
         console.log("📦 Formatted Data:", formatted);
         setData(formatted);
       } catch (err) {
-        console.error("❌ Error fetching inquiries:", err);
+        console.error("❌ Error fetching data:", err.response?.data || err.message);
       } finally {
         setLoading(false);
       }
@@ -77,53 +118,123 @@ const UserHome = () => {
 
   // زر Show
   const handleShowClick = (id) => {
-    console.log("👁 Show clicked for ID:", id);
     navigate(`/details/${id}`);
   };
 
-  // Toggle Favorite
-  const toggleFavorite = async (id, isFavorite) => {
-    console.log("⭐ Toggle favorite for ID:", id);
+  // استخراج أحدث favouriteId لعنصر ما من الحالة الحالية
+  const resolveFavouriteId = async (inquiryId, headers) => {
+    // 1) من الفهرس الحالي
+    let favId = favIndex.latestId(inquiryId);
+    if (favId) return favId;
 
-    const requestBody = { inquiry_id: id };
-    console.log("📬 Sending request body:", requestBody);
+    // 2) إعادة الجلب كحلّ أخير
+    console.log('🔄 Refetching /api/myFavourites to resolve favouriteId…');
+    const ref = await axios.get(`${API_BASE_URL}/api/myFavourites`, { headers });
+    const list = Array.isArray(ref.data) ? ref.data : [];
+    setFavourites(list);
+    // اختر الأحدث لنفس الاستفسار
+    const latest = list
+      .filter(f => f.inquiry_id === inquiryId)
+      .sort((a, b) => {
+        const ta = new Date(a.created_at).getTime();
+        const tb = new Date(b.created_at).getTime();
+        if (ta !== tb) return ta - tb;
+        return a.id - b.id;
+      })
+      .pop();
+    return latest?.id ?? null;
+  };
 
+  // Toggle Favorite (يدعم add/remove مع حفظ/استرجاع favouriteId)
+  const toggleFavorite = async (inquiryId, isFavorite, favouriteIdFromRow) => {
     const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+    console.log("⭐ toggleFavorite called:", { inquiryId, isFavorite, favouriteId: favouriteIdFromRow, tokenPresent: !!token });
+
+    if (!token) {
+      console.error("❌ No token found in localStorage");
+      return;
+    }
+
     try {
-      let response;
       if (isFavorite) {
-        // إذا كان مضاف للمفضلة نزيله
-        response = await axios.delete(`${API_BASE_URL}/api/favourites/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // DELETE — نحتاج favouriteId
+        let favId = favouriteIdFromRow || favIndex.latestId(inquiryId);
+
+        if (!favId) {
+          console.warn('⚠️ favouriteId missing in row/state. Trying to resolve via refetch…');
+          favId = await resolveFavouriteId(inquiryId, headers);
+        }
+
+        if (!favId) {
+          console.error("❌ favouriteId is missing for deletion. Cannot call DELETE without the favourites record id.");
+          return;
+        }
+
+        const url = `${API_BASE_URL}/api/favourites/${favId}`;
+        console.log('🗑 Sending DELETE to:', url);
+        const res = await axios.delete(url, { headers });
+        console.log('✅ DELETE response:', res.data);
+
+        // حدّث favourites (أزل السجل) + حدّث صف الجدول
+        setFavourites(prev => prev.filter(f => f.id !== favId));
+        setData(prev =>
+          prev.map(item =>
+            item.id === inquiryId ? { ...item, isFavorite: false, favouriteId: null } : item
+          )
+        );
       } else {
-        // إذا لم يكن مضاف للمفضلة نضيفه
-        response = await axios.post(`${API_BASE_URL}/api/favourites`, requestBody, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // POST — أضف للمفضلة
+        const url = `${API_BASE_URL}/api/favourites`;
+        console.log('➕ Sending POST to:', url, { inquiry_id: inquiryId });
+
+        const res = await axios.post(url, { inquiry_id: inquiryId }, { headers });
+        console.log('✅ POST response:', res.data);
+
+        // حاول استخراج الـ id من الاستجابة
+        const created = (res?.data && typeof res.data === 'object') ? (res.data.data || res.data) : null;
+        let newFavId = created?.id ?? null;
+
+        if (!newFavId) {
+          // fallback: refetch لمعرفة id المُضاف
+          console.warn('⚠️ Could not read new favourite id from POST response, refetching myFavourites…');
+          const ref = await axios.get(`${API_BASE_URL}/api/myFavourites`, { headers });
+          const list = Array.isArray(ref.data) ? ref.data : [];
+          setFavourites(list);
+          newFavId = list
+            .filter(f => f.inquiry_id === inquiryId)
+            .sort((a, b) => {
+              const ta = new Date(a.created_at).getTime();
+              const tb = new Date(b.created_at).getTime();
+              if (ta !== tb) return ta - tb;
+              return a.id - b.id;
+            })
+            .pop()?.id ?? null;
+        } else {
+          // نضيف السجل إلى الحالة بدون انتظار refetch
+          const newFavRecord = created?.inquiry_id
+            ? created
+            : { id: newFavId, inquiry_id: inquiryId, created_at: new Date().toISOString() };
+          setFavourites(prev => [...prev, newFavRecord]);
+        }
+
+        // حدّث صف الجدول
+        setData(prev =>
+          prev.map(item =>
+            item.id === inquiryId ? { ...item, isFavorite: true, favouriteId: newFavId } : item
+          )
+        );
       }
-
-      console.log("✅ API Response for Favourite:", response.data);
-
-      // تحديث البيانات المحلية
-      setData(prev =>
-        prev.map(item =>
-          item.id === id ? { ...item, isFavorite: !isFavorite } : item
-        )
-      );
     } catch (err) {
-      console.error("❌ Error favouriting inquiry:", err);
+      console.error("❌ Error toggling favourite:", err.response?.data || err.message);
     }
   };
 
   // تصفية البيانات حسب التبويب
   const filteredData = useMemo(() => {
-    const result = selectedTab === 'All Inquiries'
+    return selectedTab === 'All Inquiries'
       ? data
       : data.filter((item) => item.status === selectedTab);
-
-    console.log("🔎 Filtered Data:", result);
-    return result;
   }, [selectedTab, data]);
 
   // تقسيم الصفحات
@@ -171,7 +282,7 @@ const UserHome = () => {
       cell: (_, row) => (
         <FavoriteButton
           isFavorite={row.isFavorite}
-          onToggle={() => toggleFavorite(row.id, row.isFavorite)}
+          onToggle={() => toggleFavorite(row.id, row.isFavorite, row.favouriteId)}
         />
       ),
     },
@@ -190,15 +301,7 @@ const UserHome = () => {
       />
 
       <div className="relative w-full">
-        {loading ? (
-          <div>
-            {/* عرض الخيالات أثناء التحميل */}
-            <Skeleton count={5} height={40} />
-          </div>
-        ) : (
-          <DynamicTable columns={columns} data={paginatedData} />
-        )}
-
+        <DynamicTable columns={columns} data={paginatedData} />
         {totalPages > 1 && (
           <Pagination
             currentPage={currentPage}
@@ -208,11 +311,8 @@ const UserHome = () => {
         )}
       </div>
 
-      {/* Floating Action Button */}
       <FloatingActionButton
-        onClick={() => {
-          navigate('/add');
-        }}
+        onClick={() => navigate('/add')}
         label="Add Inquiry"
       />
     </div>

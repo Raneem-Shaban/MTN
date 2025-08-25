@@ -19,8 +19,9 @@ const InquiryCard = ({
     date,
     attachments = [],
     userName,
-    userRole ,
+    userRole,
     userAvatar = '/assets/img/default-avatar.png',
+    finalResponse, 
 }) => {
     return (
         <div className="bg-[var(--color-bg)] rounded-xl shadow-sm p-5 md:p-6 space-y-4">
@@ -80,6 +81,14 @@ const InquiryCard = ({
                                 <span className="text-[var(--color-text-main)]">{category}</span>
                             </div>
                         </div>
+
+                        {/* Final Response */}
+                        {finalResponse && (
+                            <div className="mt-4 py-4 border-t border-[var(--color-text-muted)] text-[var(--color-text-main)]">
+                                <div className="font-semibold text-[var(--color-secondary)] text-lg">Final Response:</div>
+                                <div className="text-[17px] font-medium text-[var(--color-text-main)] break-words leading-relaxed mt-2">{finalResponse}</div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

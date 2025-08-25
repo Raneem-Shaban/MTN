@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FiSearch, FiPaperclip, FiX } from "react-icons/fi";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom"; 
 import CategoryDropdown from "../../components/common/dropdown/CategoryDropdown";
 import { API_BASE_URL } from "../../constants/constants";
 
@@ -11,6 +12,8 @@ const UserAddInquiry = () => {
   const [category, setCategory] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleAttachmentChange = (e) => {
     const files = Array.from(e.target.files);
@@ -26,8 +29,6 @@ const UserAddInquiry = () => {
       toast.error("Please fill all required fields (Category, Title, Body).");
       return;
     }
-
-    console.log("Submitting Inquiry:", { title, body, category, attachments });
 
     const token = localStorage.getItem("token");
 
@@ -46,7 +47,6 @@ const UserAddInquiry = () => {
         },
       });
 
-      console.log("API Response:", res.data);
       toast.success(res.data.message || "Inquiry submitted successfully!");
 
       // Reset form
@@ -54,6 +54,9 @@ const UserAddInquiry = () => {
       setBody("");
       setCategory("");
       setAttachments([]);
+
+      navigate(-1);
+
     } catch (err) {
       console.error("Submission error:", err);
       toast.error("Something went wrong while submitting inquiry.");
@@ -62,7 +65,6 @@ const UserAddInquiry = () => {
     }
   };
 
-  // زر Submit يكون disabled إذا أي حقل إلزامي فارغ
   const isSubmitDisabled = !title || !body || !category || loading;
 
   return (
