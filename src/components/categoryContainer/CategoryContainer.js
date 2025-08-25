@@ -42,7 +42,6 @@ const CategoryContainer = ({ categories = [], onReturnCategory, onResetAll, hasA
     e.preventDefault();
   };
 
-  // Clear selection after drop anywhere
   useEffect(() => {
     const clearOnDrop = () => setSelectedCategories([]);
     window.addEventListener('drop', clearOnDrop);

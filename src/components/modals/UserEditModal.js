@@ -71,14 +71,12 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div className="bg-[var(--color-bg)] p-6 rounded-lg w-full max-w-md md:max-w-lg lg:max-w-xl relative">
-        {/* Icon */}
         <div className="flex justify-center -mt-16 mb-6">
           <div className="bg-blue-100 p-4 rounded-full border-4 border-[var(--color-bg)] shadow-md">
             <Pencil className="text-[var(--color-secondary)] text-2xl" />
           </div>
         </div>
 
-        {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] text-2xl"
@@ -86,7 +84,6 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
           <IoClose />
         </button>
 
-        {/* Form */}
         <div className="space-y-4 max-h-[65vh] overflow-y-auto px-3 pb-2">
           <Input
             label="Name"
@@ -136,7 +133,6 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
           />
         </div>
 
-        {/* Footer Buttons */}
         <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6">
           <button
             type="button"

@@ -1,67 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { login } from '../../store/slices/authSlice';
-import { useNavigate } from 'react-router-dom';
-// import axios from '../../utils/axiosConfig';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../../constants/constants';
 import { toast } from 'react-toastify';
-import { Link } from 'react-router-dom';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-
 
 export default function Login() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
+    // تحقق من الجلسة عند تحميل الصفحة
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) navigate('/');
+    }, [navigate]);
+
+    const validateEmail = (email) =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
-        setError(null);
+
+        if (isLoading) return;
+
+        if (!email || !password) {
+            toast.error("Please enter both email and password.");
+            return;
+        }
+
+        if (!validateEmail(email)) {
+            toast.error("Invalid email format.");
+            return;
+        }
+
+        setIsLoading(true);
 
         try {
-            // await axios.get(`${API_BASE_URL}/sanctum/csrf-cookie`, { withCredentials: true });
-            const response = await axios.post(`${API_BASE_URL}/api/login`, {
-                email,
-                password
-            }, {
-                withCredentials: true,
-            });
+            const response = await axios.post(
+                `${API_BASE_URL}/api/login`,
+                { email, password },
+                {
+                    withCredentials: true,
+                    validateStatus: (status) => status < 500
+                }
+            );
 
-            const { token, user } = response.data;
-            console.log("Login response:", response.data);
-            localStorage.setItem('token', token);
+            if (response.status >= 200 && response.status < 300) {
+                const { token, user } = response.data;
+                localStorage.setItem('token', token);
 
-            dispatch(login({
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role_id: user.role_id || null,
-                role_name: user.position || '',
-                token: token
-            }));
-            console.log("User logged in with token:", token);
+                dispatch(login({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role_id: user.role_id || null,
+                    role_name: user.position || '',
+                    token: token
+                }));
 
-            toast.success("Login successful!");
-            navigate('/');
+                toast.success("Login successful!");
+                navigate('/');
+            } else {
+                toast.error(response.data?.message || "Authentication failed");
+            }
 
         } catch (error) {
-            if (error.response?.data?.message) {
-                toast.error(error.response.data.message);
+            console.error("Login error:", error);
+            if (error.response) {
+                const { status, data } = error.response;
+                if (status === 401) {
+                    toast.error("Invalid credentials");
+                } else {
+                    toast.error(data.message || `Server error (${status})`);
+                }
+            } else if (error.request) {
+                toast.error("No response from server");
             } else {
-                toast.error("An error occurred while logging in.");
+                toast.error("Request setup error");
             }
+        } finally {
+            setIsLoading(false);
         }
-    };
+    }, [email, password, isLoading, dispatch, navigate]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-primary)]">
-            <div className='w-full max-w-6xl mx-auto rounded-lg overflow-hidden '>
+            <div className='w-full max-w-6xl mx-auto rounded-lg overflow-hidden'>
                 <div className="flex flex-col min-h-[80vh] md:flex-row bg-white m-8">
-                    {/* Left Section */}
                     <div className="md:w-1/4 flex flex-col items-center justify-center bg-[var(--color-surface)] p-8 shadow-md">
                         <h1 className="text-3xl font-semibold text-gray-800 mb-2">Welcome to</h1>
                         <h2 className="text-4xl font-bold text-[var(--color-primary)] mb-6">Train Track</h2>
@@ -72,7 +104,6 @@ export default function Login() {
                         />
                     </div>
 
-                    {/* Right Section */}
                     <div className="flex-1 flex items-center justify-center bg-white p-6">
                         <div className="w-full max-w-md">
                             <h2 className="text-2xl font-semibold text-start mb-6">Sign in</h2>
@@ -84,6 +115,7 @@ export default function Login() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        autoComplete="email"
                                     />
                                 </div>
 
@@ -95,10 +127,11 @@ export default function Login() {
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                                            autoComplete="current-password"
                                         />
                                         <button
                                             type="button"
-                                            onClick={() => setShowPassword((prev) => !prev)}
+                                            onClick={() => setShowPassword(prev => !prev)}
                                             className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                                         >
                                             {showPassword ? <FiEyeOff /> : <FiEye />}
@@ -111,25 +144,19 @@ export default function Login() {
                                     </div>
                                 </div>
 
-
-
-                                {error && (
-                                    <div className="text-red-500 text-sm">{error}</div>
-                                )}
-
                                 <button
                                     type="submit"
-                                    className="w-full py-2 px-4 bg-[var(--color-secondary)] text-white rounded-md hover:bg-[var(--color-secondary-hover)] transition-colors"
+                                    disabled={isLoading}
+                                    className={`w-full py-2 px-4 bg-[var(--color-secondary)] text-white rounded-md ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--color-secondary-hover)]'}`}
                                 >
-                                    Sign in
+                                    {isLoading ? 'Signing in...' : 'Sign in'}
                                 </button>
                             </form>
 
-
                             <div className="mt-4 text-center">
-                                <a href="#" className="text-sm text-gray-600 hover:underline">
+                                <button type="button" className="text-sm text-gray-600 hover:underline">
                                     Browse as a guest
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>

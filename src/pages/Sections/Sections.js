@@ -32,7 +32,7 @@ const Sections = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSection, setSelectedSection] = useState(null);
   const [filterTab, setFilterTab] = useState('Sections');
-  const [detailTab, setDetailTab] = useState('Inquiries'); // 🆕 for toggling
+  const [detailTab, setDetailTab] = useState('Inquiries'); 
   const [inquiryRatings, setInquiryRatings] = useState(
     Object.fromEntries(dummyInquiries.map((inq) => [inq.id, inq.rating]))
   );
@@ -289,7 +289,6 @@ const Sections = () => {
 
     const data = response.data;
 
-    // التحقق من نوع الاستجابة
     if (Array.isArray(data)) {
       if (data.length === 0) {
         toast.info("No matching results found.");
@@ -305,11 +304,9 @@ const Sections = () => {
         dispatch(setSections(formatted));
       }
     } else if (data && data.message) {
-      // إذا كانت الاستجابة تحتوي على رسالة
       toast.info(data.message);
       dispatch(setSections([]));
     } else {
-      // استجابة غير متوقعة
       toast.info("No results found");
       dispatch(setSections([]));
     }
@@ -382,7 +379,6 @@ const Sections = () => {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Right */}
         <div className="flex flex-col max-h-[calc(100vh-180px)] overflow-auto rounded-2xl">
           {loading ? (
             <div className="flex min-h-screen items-center justify-center w-full">
@@ -406,7 +402,6 @@ const Sections = () => {
           </div>
         </div>
 
-        {/* Left */}
         <div className="bg-[var(--color-white)] rounded-2xl shadow-md flex flex-col max-h-[calc(100vh-240px)]">
           {selectedSection ? (
             <>

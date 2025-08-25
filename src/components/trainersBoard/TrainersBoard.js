@@ -5,8 +5,8 @@ import { API_BASE_URL } from '../../constants/constants';
 import axios from 'axios';
 
 const TrainersBoard = () => {
-  const [trainers, setTrainers] = useState([]); // جلب trainers من API
-  const [tasks, setTasks] = useState([]);       // جلب معلومات إضافية لكل trainer
+  const [trainers, setTrainers] = useState([]); 
+  const [tasks, setTasks] = useState([]);
   const [loadingTrainers, setLoadingTrainers] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(true);
 
@@ -100,7 +100,6 @@ const TrainersBoard = () => {
     fetchCategories();
   }, []);
 
-  // Reset handler
   const handleResetAll = () => {
     setIsResetting(true);
 
@@ -121,7 +120,6 @@ const TrainersBoard = () => {
 
   const hasAssignedCategories = Object.values(assignedCategories).some(arr => arr.length > 0);
 
-  // تحميل؟
   if (loadingTrainers || loadingTasks || loadingCategories) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -141,7 +139,6 @@ const TrainersBoard = () => {
       <div className="min-h-screen flex-1">
         <div className="grid grid-cols-[repeat(auto-fit,_minmax(150px,_1fr))] gap-4 justify-items-center">
           {trainers.map((trainer) => {
-            // البحث عن task المرتبط بـ trainer حسب الاسم أو ID
             const matchingTask = tasks.find(
               (task) => task.owner?.id === trainer.id
             );

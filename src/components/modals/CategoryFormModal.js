@@ -60,7 +60,6 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div className="bg-[var(--color-bg)] rounded-lg w-full max-w-md md:max-w-lg lg:max-w-xl relative max-h-[90vh] flex flex-col">
-        {/* Icon and Close */}
         <div className="flex justify-center mt-5">
           <div className="bg-[var(--color-trainer-task)] p-4 rounded-full border-4 border-white shadow-md -mt-12">
             <LayoutDashboard size={24} className="text-[var(--color-secondary)]" />
@@ -73,7 +72,6 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
           </button>
         </div>
 
-        {/* Form Fields */}
         <div className="overflow-y-auto px-6 pt-4 pb-2 space-y-4">
           <Input
             label="Name"
@@ -91,7 +89,6 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
           />
         </div>
 
-        {/* Footer Buttons */}
         <div className="px-6 py-4 mt-auto border-t bg-[var(--color-bg)] rounded-b-lg">
           <div className="flex flex-col sm:flex-row justify-between gap-3">
             <button

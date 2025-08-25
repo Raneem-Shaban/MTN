@@ -1,4 +1,3 @@
-// src/components/common/cards/InfoCard.js
 import React from 'react';
 
 const InfoCard = ({ icon, title, description, linkText, linkHref, color = 'var(--color-primary)' }) => {

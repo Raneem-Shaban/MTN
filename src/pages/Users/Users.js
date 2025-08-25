@@ -11,7 +11,7 @@ import { API_BASE_URL } from '../../constants/constants';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 
-const tabs = ['All users', 'Supervisors', 'Trainers', 'Users', 'Blocked Users'];
+const tabs = ['All users', 'SuperAdmin', 'Admin', 'Trainer', 'User', 'Assistant', 'Blocked Users'];
 
 const userStatusColors = {
   Active: { bg: 'var(--color-status-open-bg)', text: 'var(--color-status-open)' },
@@ -37,7 +37,7 @@ const UsersPage = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  
+
 
 
   useEffect(() => {
@@ -79,7 +79,7 @@ const UsersPage = () => {
 
   const handleAddUser = (formData) => {
     console.log('New User:', formData);
-    // API call to add user
+
   };
 
   const filtered =
@@ -93,7 +93,6 @@ const UsersPage = () => {
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleRowClick = (row) => {
-    // Optional
   };
 
   const handleEdit = (row) => {
@@ -105,7 +104,6 @@ const UsersPage = () => {
   const handleUpdateUser = (updatedUserData) => {
     console.log('Updated user:', updatedUserData);
     setIsEditOpen(false);
-    // Refresh users or update state manually
   };
 
   const handleBlockToggle = (row) => {

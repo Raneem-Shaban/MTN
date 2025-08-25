@@ -114,7 +114,6 @@ const UserAddInquiry = () => {
           />
         </div>
 
-        {/* Attachments */}
         <div className="flex flex-col space-y-2">
           <label className="text-sm font-medium text-[var(--color-text-secondary)]">
             Attachments (Optional)
@@ -150,7 +149,6 @@ const UserAddInquiry = () => {
           )}
         </div>
 
-        {/* Submit Button */}
         <div>
           <button
             onClick={handleSubmit}

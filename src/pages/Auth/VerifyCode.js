@@ -43,14 +43,14 @@ export default function VerifyCode() {
     };
 
     const handleInputChange = (index, value) => {
-        if (!/^[0-9]?$/.test(value)) return; // يقبل فقط رقم واحد
+        if (!/^[0-9]?$/.test(value)) return; 
 
         const updated = [...codeArray];
         updated[index] = value;
         setCodeArray(updated);
 
         if (value && index < codeArray.length - 1) {
-            inputRefs.current[index + 1].focus(); // التركيز على التالي
+            inputRefs.current[index + 1].focus();
         }
     };
 
@@ -66,7 +66,6 @@ export default function VerifyCode() {
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-primary)]">
             <div className='w-full max-w-6xl mx-auto rounded-lg overflow-hidden '>
                 <div className="flex flex-col min-h-[80vh] md:flex-row bg-white m-8">
-                    {/* Left Section */}
                     <div className="md:w-1/4 flex flex-col items-center justify-center bg-[var(--color-surface)] p-8 shadow-md">
                         <h1 className="text-3xl font-semibold text-gray-800 mb-2">Train Track</h1>
                         <img
@@ -76,7 +75,6 @@ export default function VerifyCode() {
                         />
                     </div>
 
-                    {/* Right Section */}
                     <div className="flex-1 flex items-center justify-center bg-white p-6">
                         <div className="w-full max-w-md">
                             <h2 className="text-2xl font-semibold mb-6">Enter Verification Code</h2>
@@ -105,10 +103,10 @@ export default function VerifyCode() {
                                                 ref={(el) => inputRefs.current[idx] = el}
                                                 className="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 onPaste={(e) => {
-                                                    if (idx !== 0) return; // فقط أول خانة
+                                                    if (idx !== 0) return; 
 
                                                     const paste = e.clipboardData.getData('text');
-                                                    if (!/^\d+$/.test(paste)) return; // تأكد أنه أرقام فقط
+                                                    if (!/^\d+$/.test(paste)) return;
 
                                                     const digits = paste.slice(0, codeArray.length).split('');
                                                     const updated = [...codeArray];
@@ -117,7 +115,6 @@ export default function VerifyCode() {
                                                     });
                                                     setCodeArray(updated);
 
-                                                    // ركزي آخر خانة تم ملؤها
                                                     const lastIndex = digits.length >= codeArray.length ? codeArray.length - 1 : digits.length;
                                                     setTimeout(() => {
                                                         inputRefs.current[lastIndex]?.focus();

@@ -36,7 +36,6 @@ export default function ForgotPassword() {
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-primary)]">
             <div className='w-full max-w-6xl mx-auto rounded-lg overflow-hidden '>
                 <div className="flex flex-col min-h-[80vh] md:flex-row bg-white m-8">
-                    {/* Left Section */}
                     <div className="md:w-1/4 flex flex-col items-center justify-center bg-[var(--color-surface)] p-8 shadow-md">
                         <h1 className="text-3xl font-semibold text-gray-800 mb-2">Train Track</h1>
                         <img
@@ -46,7 +45,6 @@ export default function ForgotPassword() {
                         />
                     </div>
 
-                    {/* Right Section */}
                     <div className="flex-1 flex items-center justify-center bg-white p-6">
                         <div className="w-full max-w-md">
                             <h2 className="text-2xl font-semibold mb-6">Forgot Password</h2>

@@ -6,7 +6,7 @@ const sectionSlice = createSlice({
   reducers: {
     setSections: (state, action) => action.payload,
     addSection: (state, action) => {
-      state.unshift(action.payload); // نضيفه في البداية
+      state.unshift(action.payload);
     },
     removeSection: (state, action) => {
       return state.filter(section => section.id !== action.payload);

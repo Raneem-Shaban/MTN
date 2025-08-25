@@ -82,7 +82,6 @@ const Trainers = () => {
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* القسم الأيسر - جدول المدربين */}
         <div className="flex flex-col max-h-[calc(100vh-160px)] overflow-auto rounded-2xl">
           <DynamicTable
             columns={columns}
@@ -99,18 +98,15 @@ const Trainers = () => {
           </div>
         </div>
 
-        {/* القسم الأيمن - استعلامات المدرب */}
         <div className="bg-[var(--color-white)] rounded-2xl shadow-md flex flex-col max-h-[calc(100vh-210px)]">
           {selectedTrainer ? (
             <>
-              {/* العنوان الثابت */}
               <div className="sticky top-0 z-10 bg-[var(--color-white)] px-6 py-4 border-b rounded-t-2xl border-[var(--color-border)]">
                 <h2 className="text-xl font-semibold text-[var(--color-text-accent)]">
                   {selectedTrainer.name}'s Inquiries
                 </h2>
               </div>
 
-              {/* Scroll داخلي هنا فقط */}
               <div className="flex-1 overflow-y-auto px-6 py-4">
                 {dummyInquiries.length > 0 ? (
                   dummyInquiries.map((inquiry) => (

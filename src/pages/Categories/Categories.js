@@ -79,11 +79,10 @@ const Categories = () => {
   } catch (error) {
     console.error('Failed to untrash category:', error);
     
-    // التعامل مع انتهاء الجلسة
     if (error.response?.status === 401) {
       toast.error('Session expired. Please log in again.');
       localStorage.removeItem('token');
-      window.location.href = '/login'; // أو استخدمي navigate إذا كان عندك react-router
+      window.location.href = '/login'; 
     } else {
       toast.error('Something went wrong. Please try again.');
     }
@@ -149,7 +148,7 @@ const Categories = () => {
     );
 
     if (response.status === 200) {
-      fetchCategories(); // إعادة تحميل التصنيفات
+      fetchCategories();
       toast.success('Category updated successfully!');
     } else {
       toast.error(response.data.message || 'Failed to update category');
