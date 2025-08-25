@@ -5,6 +5,8 @@ import '../../App.css';
 
 const CategoryContainer = ({ categories = [], onReturnCategory, onResetAll, hasAssignedCategories, isResetting }) => {
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [draggingCategory, setDraggingCategory] = useState(null);
+
 
   const toggleCategorySelection = (category) => {
   setSelectedCategories((prev) =>
@@ -15,32 +17,59 @@ const CategoryContainer = ({ categories = [], onReturnCategory, onResetAll, hasA
 };
 
 
-  const handleDragStart = (e, category) => {
-  const dragging = selectedCategories.length > 0 ? selectedCategories : [category];
-  e.dataTransfer.setData('text/categories', JSON.stringify(dragging));
+//  const handleDragStart = (e, category) => {
+//   setDraggingCategory(category.name);
 
-  const ghost = document.createElement('div');
-  ghost.innerHTML = `${dragging.length} selected`;
-  ghost.style.position = 'absolute';
-  ghost.style.top = '-9999px';
-  document.body.appendChild(ghost);
-  e.dataTransfer.setDragImage(ghost, 0, 0);
-  setTimeout(() => document.body.removeChild(ghost), 0);
+//   const dragging = selectedCategories.length > 0 ? selectedCategories : [category];
+//   e.dataTransfer.setData('category-from-container', JSON.stringify(category));
+
+//   // const ghost = document.createElement('div');
+//   // ghost.innerHTML = `${dragging.length} selected`;
+//   // ghost.style.position = 'absolute';
+//   // ghost.style.top = '-9999px';
+//   // document.body.appendChild(ghost);
+//   // e.dataTransfer.setDragImage(ghost, 0, 0);
+//   // setTimeout(() => document.body.removeChild(ghost), 0);
+// };
+const handleDragStart = (e, category) => {
+  setDraggingCategory(category.name);
+  e.dataTransfer.setData('category-from-container', JSON.stringify(category));
+
+  const element = e.currentTarget.cloneNode(true); // نسخة من العنصر نفسه
+  element.style.position = "absolute";
+  element.style.top = "-9999px";
+  element.style.left = "-9999px";
+  document.body.appendChild(element);
+
+  e.dataTransfer.setDragImage(element, 0, 0);
+
+  setTimeout(() => document.body.removeChild(element), 0);
 };
 
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const data = e.dataTransfer.getData('category-from-trainer');
-    if (data) {
-      const { cat, trainer } = JSON.parse(data);
-      onReturnCategory(trainer, cat);
+const handleDrop = (e) => {
+  e.preventDefault();
+  
+  const data = e.dataTransfer.getData("category-from-trainer");
+  if (data) {
+    const { cat, trainerId } = JSON.parse(data);
+
+    // إخطار المكون الأعلى لإرجاع الكاتيجوري للقائمة وحذفها من المدرب
+    if (onReturnCategory) {
+      onReturnCategory(trainerId, cat);
     }
-  };
+  }
+};
+
 
   const handleDragOver = (e) => {
     e.preventDefault();
   };
+
+  const handleDragEnd = () => {
+  setDraggingCategory(null);
+};
+
 
   useEffect(() => {
     const clearOnDrop = () => setSelectedCategories([]);
@@ -87,20 +116,23 @@ const CategoryContainer = ({ categories = [], onReturnCategory, onResetAll, hasA
 
       <div className="flex-1 overflow-y-auto space-y-3 p-3">
         {categories.map((cat, index) => (
-          <div
-            key={cat.name}
-            draggable
-            onDragStart={(e) => handleDragStart(e, cat)}
-            onClick={() => toggleCategorySelection(cat)}
-            className={`cursor-pointer ${selectedCategories.includes(cat) ? 'ring-2 ring-blue-500 bg-blue-100' : ''}`}
-            style={{ opacity: selectedCategories.includes(cat) ? 0.7 : 1 }}
-          >
-            <CategoryItem
-              name={cat.name}
-              description={cat.description}
-              colorClass={colorCycle[index % colorCycle.length]}
-            />
-          </div>
+         <div
+  key={cat.name}
+  draggable
+  onDragStart={(e) => handleDragStart(e, cat)}
+  onDragEnd={handleDragEnd}
+  onClick={() => toggleCategorySelection(cat)}
+  className={`cursor-pointer transition-transform duration-300 
+    ${selectedCategories.includes(cat) ? 'ring-2 ring-blue-500 bg-blue-100' : ''} 
+    ${draggingCategory === cat.name ? 'scale-110 rotate-3 shadow-lg opacity-80' : ''}`}
+  style={{ opacity: selectedCategories.includes(cat) ? 0.7 : 1 }}
+>
+  <CategoryItem
+    name={cat.name}
+    colorClass={colorCycle[index % colorCycle.length]}
+  />
+</div>
+
         ))}
 
       </div>

@@ -15,7 +15,8 @@ export default function VerifyCode() {
     const handleVerify = async (e) => {
         e.preventDefault();
 
-        if (!combinedCode || combinedCode.length < 5) {
+        const code = codeArray.join('');
+        if (!code || code.length < 5) {
             toast.error('Please enter the full code');
             return;
         }
@@ -23,17 +24,12 @@ export default function VerifyCode() {
         try {
             const response = await axios.post(`${API_BASE_URL}/api/check_forget_code`, {
                 email,
-                code: combinedCode
+                code
             });
 
             if (response.data.status === 200) {
                 toast.success('Code verified successfully');
-                navigate('/reset-password', {
-                    state: {
-                        email,
-                        code: combinedCode
-                    }
-                });
+                navigate('/reset-password', { state: { email, code } });
             } else {
                 toast.error(response.data.message || 'Invalid code');
             }
@@ -42,8 +38,9 @@ export default function VerifyCode() {
         }
     };
 
+
     const handleInputChange = (index, value) => {
-        if (!/^[0-9]?$/.test(value)) return; 
+        if (!/^[0-9]?$/.test(value)) return;
 
         const updated = [...codeArray];
         updated[index] = value;
@@ -103,11 +100,9 @@ export default function VerifyCode() {
                                                 ref={(el) => inputRefs.current[idx] = el}
                                                 className="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 onPaste={(e) => {
-                                                    if (idx !== 0) return; 
+                                                    if (idx !== 0) return;
 
-                                                    const paste = e.clipboardData.getData('text');
-                                                    if (!/^\d+$/.test(paste)) return;
-
+                                                    const paste = e.clipboardData.getData('text').replace(/\D/g, ''); // إزالة أي حرف غير رقمي
                                                     const digits = paste.slice(0, codeArray.length).split('');
                                                     const updated = [...codeArray];
                                                     digits.forEach((d, i) => {
@@ -120,6 +115,7 @@ export default function VerifyCode() {
                                                         inputRefs.current[lastIndex]?.focus();
                                                     }, 0);
                                                 }}
+
                                             />
                                         ))}
 

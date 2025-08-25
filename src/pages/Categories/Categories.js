@@ -130,15 +130,22 @@ const Categories = () => {
   }
 };
 
-  const handleUpdateCategory = async (formData) => {
-    const token = localStorage.getItem('token');
+ const handleUpdateCategory = async (formData) => {
+  const token = localStorage.getItem('token');
   try {
+    const payload = {
+      description: formData.description,
+      weight: formData.weight,
+    };
+
+    // نضيف الاسم فقط لو اتغير عن الاسم الأصلي
+    if (formData.name !== selectedCategory.name) {
+      payload.name = formData.name;
+    }
+
     const response = await axios.post(
       `${API_BASE_URL}/api/categories/${formData.id}`,
-      {
-        name: formData.name,
-        description: formData.description,
-      },
+      payload,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -161,6 +168,7 @@ const Categories = () => {
 };
 
 
+
   const pageSize = 5;
   const paginated = categories.slice(
     (currentPage - 1) * pageSize,
@@ -170,6 +178,12 @@ const Categories = () => {
   const columns = [
     { header: 'Name', accessor: 'name' },
     { header: 'Description', accessor: 'description' },
+    { header: 'Weight', accessor: 'weight' }, // عمود الوزن
+  { 
+    header: 'Owner', 
+    accessor: 'owner', 
+    cell: (_, row) => row.owner ? row.owner.name : '—' // إذا لم يوجد مالك يظهر "-"
+  },
     ...(selectedTab === 'Categories'
       ? [
         {

@@ -61,7 +61,12 @@ const InquiryDetails = () => {
     status,
   } = inquiry;
 
-  const formatDate = (date) => (date ? new Date(date).toLocaleString() : '—');
+  const formatDate = (date) => {
+  if (!date) return '—';
+
+  const parsedDate = new Date(date);
+  return isNaN(parsedDate) ? '—' : parsedDate.toLocaleString();
+};
 
   const Card = ({ title, children }) => (
     <div className="bg-white rounded-xl shadow-md p-6 space-y-4 border border-gray-100">

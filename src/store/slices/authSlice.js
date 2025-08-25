@@ -5,7 +5,7 @@ const initialState = {
     id: null,
     name: '',
     email: '',
-    role_id: 1,
+    role_id: null,
     role_name: '',
     token: null,
   },
@@ -27,6 +27,7 @@ const authSlice = createSlice({
         email: '',
         role_id: null,
         role_name: '',
+        token: null,
       };
       state.isAuthenticated = false;
     },

@@ -1,10 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Pencil } from 'lucide-react'; 
+import { Pencil } from 'lucide-react';
 import CategoryItem from '../categoryItem/CategoryItem';
 import TrainerSelectModal from '../modals/TrainerSelectModal';
 import '../../App.css';
+import { API_BASE_URL } from '../../constants/constants';
+import axios from 'axios';
 
-const TrainerInTask = ({ name, delegationName, categories, isResetting, allTrainers }) => {
+const TrainerInTask = ({ name, delegationName, tasks, isResetting, allTrainers, trainerId, onTaskCreated, onCategoryAssigned }) => {
+
+  const categories = tasks.map((task) => ({
+    id: task.category.id,
+    name: task.category.name,
+    description: task.category.description,
+  }));
+  
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(delegationName || '');
   const [justDropped, setJustDropped] = useState(false);
@@ -26,9 +35,78 @@ const TrainerInTask = ({ name, delegationName, categories, isResetting, allTrain
     e.preventDefault();
   };
 
+  const handleDrop = async (e) => {
+    e.preventDefault();
+
+    const data = e.dataTransfer.getData('category-from-container');
+    if (data) {
+      const category = JSON.parse(data);
+
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.post(
+          `${API_BASE_URL}/api/tasks`,
+          {
+            category_id: category.id,
+            owner_id: trainerId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json"
+            }
+          }
+        );
+
+        console.log("Task created:", res.data);
+
+        if (onTaskCreated) {
+          if (res.data.task) {
+            onTaskCreated(res.data.task);
+          } else {
+            onTaskCreated({
+              id: Date.now(),
+              owner: { id: trainerId, name },
+              category,
+              delegation: null,
+            });
+          }
+        }
+
+        if (onCategoryAssigned) {
+          onCategoryAssigned(category.id);
+        }
+
+        setJustDropped(true);
+        setTimeout(() => setJustDropped(false), 800);
+
+      } catch (error) {
+        console.error("Error creating task:", error.response?.data || error.message);
+      }
+    }
+  };
+
+  const handleDragStart = (e, category) => {
+  e.dataTransfer.setData(
+    "category-from-trainer",
+    JSON.stringify({ cat: category, trainerId })
+  );
+
+  const element = e.currentTarget.cloneNode(true);
+  element.style.position = "absolute";
+  element.style.top = "-9999px";
+  element.style.left = "-9999px";
+  document.body.appendChild(element);
+  e.dataTransfer.setDragImage(element, 0, 0);
+  setTimeout(() => document.body.removeChild(element), 0);
+};
+
+
+
   return (
     <div
       onDragOver={handleDragOver}
+      onDrop={handleDrop}
       className={`w-36 h-full rounded-lg bg-[var(--color-trainer-task)] p-4 text-center shadow-md transition-transform duration-300 ${justDropped ? 'scale-105 bg-green-100' : ''
         }`}
     >
@@ -62,7 +140,9 @@ const TrainerInTask = ({ name, delegationName, categories, isResetting, allTrain
           {categories.map((cat, index) => (
             <div
               key={cat.name}
-              className={`cursor-pointer ${isResetting ? 'animate-pulse' : ''}`}
+              draggable
+              onDragStart={(e) => handleDragStart(e, cat)}
+              className="cursor-pointer"
             >
               <CategoryItem
                 name={cat.name}

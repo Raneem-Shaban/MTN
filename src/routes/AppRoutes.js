@@ -1,32 +1,29 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import routes from './routeConfig';
-import ProtectedRoute from './ProtectedRoute';
 import { useSelector } from 'react-redux';
-import UserLandingPage from '../pages/Landing/UserLandingPage';
 
 const AppRoutes = () => {
-  const userRole = useSelector((state) => state.auth.user?.role_id); 
+  const { isAuthenticated, user } = useSelector(state => state.auth);
 
   return (
     <Routes>
-      
-      {routes.map((route, idx) => (
-        <Route
-          key={idx}
-          path={route.path}
-          element={
-            <ProtectedRoute allowedRoles={route.roles} userRole={userRole}>
-              {route.element}
-            </ProtectedRoute>
-          }
-        />
-      ))}
+      {routes.map((route, idx) => {
+        const { path, element, roles } = route;
 
-      <Route path="/unauthorized" element={<div>لا تملك صلاحية</div>} />
+        const isAllowed = isAuthenticated && roles.includes(user?.role_id);
+
+        return (
+          <Route
+            key={idx}
+            path={path}
+            element={isAllowed ? element : <Navigate to="/login" replace />}
+          />
+        );
+      })}
+
       <Route path="*" element={<div>الصفحة غير موجودة</div>} />
     </Routes>
   );
 };
 
 export default AppRoutes;
-

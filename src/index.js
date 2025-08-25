@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux';
-import store from './store/store';
+import store, { persistor } from './store/store';
+import { PersistGate } from 'redux-persist/integration/react'; // ⬅️ هذا الناقص
 import './index.css'
 import axios from 'axios';
 
@@ -27,7 +28,9 @@ axios.defaults.withCredentials = true;
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <PersistGate loading={null} persistor={persistor}>
+        <App />
+      </PersistGate>
     </Provider>
   </React.StrictMode>
 );

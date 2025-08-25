@@ -4,25 +4,34 @@ import { LayoutDashboard } from 'lucide-react';
 import Input from '../common/inputs/Input';
 
 const EditCategoryModal = ({ isOpen, onClose, onSubmit, initialData }) => {
-  const [form, setForm] = useState({ name: '', description: '' });
+  const [form, setForm] = useState({ name: '', description: '', weight: 0 });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
   useEffect(() => {
     if (initialData) {
-      setForm({ name: initialData.name || '', description: initialData.description || '' });
+      setForm({
+        name: initialData.name || '',
+        description: initialData.description || '',
+        weight: initialData.weight || 0, // إضافة الوزن
+      });
     }
   }, [initialData]);
 
   const validateField = (field, value) => {
-    if (!value || value.trim() === '') {
-      return 'Required';
-    }
-    return '';
-  };
+  // تجاهل التحقق على name
+  if (field !== 'name' && !value && value !== 0) {
+    return 'Required';
+  }
+  if (field === 'weight' && isNaN(value)) {
+    return 'Must be a number';
+  }
+  return '';
+};
+
 
   const handleChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: field === 'weight' ? Number(value) : value }));
     if (touched[field]) {
       const error = validateField(field, value);
       setErrors((prev) => ({ ...prev, [field]: error }));
@@ -84,6 +93,14 @@ const EditCategoryModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             onChange={(e) => handleChange('description', e.target.value)}
             onBlur={() => handleBlur('description')}
             error={touched.description && errors.description}
+          />
+          <Input
+            label="Weight"
+            type="number"
+            value={form.weight}
+            onChange={(e) => handleChange('weight', e.target.value)}
+            onBlur={() => handleBlur('weight')}
+            error={touched.weight && errors.weight}
           />
         </div>
 

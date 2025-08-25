@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../../constants/constants';
 import axios from 'axios';
 
 const TrainersBoard = () => {
-  const [trainers, setTrainers] = useState([]); 
+  const [trainers, setTrainers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loadingTrainers, setLoadingTrainers] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(true);
@@ -84,6 +84,7 @@ const TrainersBoard = () => {
         });
 
         const categoriesFromApi = response.data.map(cat => ({
+          id: cat.id,
           name: cat.name,
           description: cat.description,
         }));
@@ -99,6 +100,11 @@ const TrainersBoard = () => {
 
     fetchCategories();
   }, []);
+
+  const handleTaskCreated = (newTask) => {
+    setTasks((prev) => [...prev, newTask]);
+  };
+
 
   const handleResetAll = () => {
     setIsResetting(true);
@@ -120,6 +126,55 @@ const TrainersBoard = () => {
 
   const hasAssignedCategories = Object.values(assignedCategories).some(arr => arr.length > 0);
 
+  const handleCategoryAssigned = (categoryId) => {
+    setAvailableCategories((prev) =>
+      prev.filter((cat) => cat.id !== categoryId)
+    );
+  };
+const handleReturnCategory = async (trainerId, category) => {
+  // إعادة الكاتيجوري للقائمة المتاحة
+  setAvailableCategories((prev) => [...prev, category]);
+
+  // إزالة المهمة الخاصة بالمدرب التي تحتوي على هذا الكاتيجوري
+  setTasks((prevTasks) =>
+    prevTasks.filter(
+      (task) =>
+        !(Number(task.owner?.id) === Number(trainerId) &&
+          Number(task.category.id) === Number(category.id))
+    )
+  );
+
+  // إزالة الكاتيجوري من assignedCategories
+  setAssignedCategories((prevAssigned) => {
+    const updated = { ...prevAssigned };
+    if (updated[trainerId]) {
+      updated[trainerId] = updated[trainerId].filter(
+        (c) => Number(c.id) !== Number(category.id)
+      );
+    }
+    return updated;
+  });
+
+  // تنفيذ الـ API لإعادة تعيين المهمة
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error("Token not found");
+
+    const res = await axios.get(`${API_BASE_URL}/api/tasks/reset/${category.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log(`Category ${category.name} reset successfully`, res.data);
+  } catch (error) {
+    console.error("Error resetting category:", error.response?.data || error.message);
+  }
+};
+
+
+
+
   if (loadingTrainers || loadingTasks || loadingCategories) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -132,6 +187,7 @@ const TrainersBoard = () => {
     <div className="flex">
       <CategoryContainer
         categories={availableCategories}
+        onReturnCategory={handleReturnCategory}
         onResetAll={handleResetAll}
         hasAssignedCategories={hasAssignedCategories}
       />
@@ -139,27 +195,31 @@ const TrainersBoard = () => {
       <div className="min-h-screen flex-1">
         <div className="grid grid-cols-[repeat(auto-fit,_minmax(150px,_1fr))] gap-4 justify-items-center">
           {trainers.map((trainer) => {
-            const matchingTask = tasks.find(
+            const trainerTasks = tasks.filter(
               (task) => task.owner?.id === trainer.id
             );
 
-            const category = matchingTask?.category
-              ? [{
-                name: matchingTask.category.name,
-                description: matchingTask.category.description,
-              }]
-              : [];
+            const categories = trainerTasks.map((task) => ({
+              name: task.category.name,
+              description: task.category.description,
+            }));
 
-            const delegation = matchingTask?.delegation?.name || '';
+
+            // مبدئياً خليه ياخد أول delegation إذا موجود
+            const delegation = trainerTasks[0]?.delegation?.name || '';
 
             return (
               <TrainerInTask
                 key={trainer.id}
                 name={trainer.name}
                 delegationName={delegation}
-                categories={category}
+                tasks={trainerTasks}
+                // categories={categories}
                 isResetting={isResetting}
                 allTrainers={trainers}
+                trainerId={trainer.id}
+                onTaskCreated={handleTaskCreated}
+                onCategoryAssigned={handleCategoryAssigned}
               />
             );
           })}

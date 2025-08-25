@@ -8,6 +8,7 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
   const [form, setForm] = useState({
     name: '',
     description: '',
+    weight: '', // تم إضافة حقل الوزن
   });
 
   const [errors, setErrors] = useState({});
@@ -16,6 +17,9 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
   const validateField = (field, value) => {
     if (!value || value.trim() === '') {
       return 'Required';
+    }
+    if (field === 'weight' && isNaN(value)) {
+      return 'Weight must be a number';
     }
     return '';
   };
@@ -49,7 +53,7 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
     if (Object.values(newErrors).every((e) => !e)) {
       onSubmit(form);
       onClose();
-      setForm({ name: '', description: '' });
+      setForm({ name: '', description: '', weight: '' }); // إعادة تعيين الحقول
       setErrors({});
       setTouched({});
     }
@@ -86,6 +90,14 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit }) => {
             onChange={(e) => handleChange('description', e.target.value)}
             onBlur={() => handleBlur('description')}
             error={touched.description && errors.description}
+          />
+          <Input
+            label="Weight"
+            type="number"
+            value={form.weight}
+            onChange={(e) => handleChange('weight', e.target.value)}
+            onBlur={() => handleBlur('weight')}
+            error={touched.weight && errors.weight}
           />
         </div>
 

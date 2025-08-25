@@ -8,7 +8,7 @@ export const lightTheme = {
   '--color-bg': '#FFFFFF',
   '--color-surface': '#F5F7FA',
 
-  '--color-white':'#FFFFFF',
+  '--color-white':'#ffffff',
   '--color-text-main': '#232323',
   '--color-text-muted': '#B1B1B1',
   '--color-text-accent': '#718EBF',

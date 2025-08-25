@@ -10,6 +10,7 @@ import UserEditModal from '../../components/modals/UserEditModal';
 import { API_BASE_URL } from '../../constants/constants';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const tabs = ['All users', 'SuperAdmin', 'Admin', 'Trainer', 'User', 'Assistant', 'Blocked Users'];
 
@@ -30,64 +31,278 @@ const roleMap = {
 };
 
 const UsersPage = () => {
+  const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('All users');
   const [currentPage, setCurrentPage] = useState(1);
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
-
+  const [sections, setSections] = useState([]);
+  const [delegations, setDelegations] = useState({});
 
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       const token = localStorage.getItem('token');
+      setLoading(true);
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const [usersRes, sectionsRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API_BASE_URL}/api/sections`, { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
 
-        const data = res.data;
+        setSections(sectionsRes.data);
 
-        const formatted = data.map((user) => {
+        // جلب delegations لكل role_id
+        const roleIds = [...new Set(usersRes.data.map(u => u.role_id))];
+        const delegationData = {};
+        await Promise.all(
+          roleIds.map(async (roleId) => {
+            const res = await axios.get(`${API_BASE_URL}/api/userRoles/${roleId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const map = new Map();
+            res.data.forEach(u => map.set(u.id, u.delegation_id || 'None'));
+            delegationData[roleId] = map;
+          })
+        );
+        setDelegations(delegationData);
+
+        // تنسيق المستخدمين مع section و delegation
+        const formattedUsers = usersRes.data.map((user) => {
           let displayStatus = 'Blocked';
+          if (user.status === 1) displayStatus = user.email_verified_at ? 'Active' : 'Pending';
 
-          if (user.status === 1) {
-            displayStatus = user.email_verified_at ? 'Active' : 'Pending';
-          }
+          const sectionObj = sectionsRes.data.find((s) => s.id === user.section_id);
+          const sectionName = sectionObj?.name || 'Unknown';
+          const divisionName = sectionObj?.division || 'Unknown';
+          const delegationName = delegationData[user.role_id]?.get(user.id) || 'None';
 
           return {
             ...user,
             role: roleMap[user.role_id] || 'Unknown',
             status: displayStatus,
+            rawStatus: user.status,
+            section: sectionName,
+            division: divisionName,
+            delegation: delegationName,
           };
         });
 
-        setUsers(formatted);
+        setUsers(formattedUsers);
       } catch (error) {
-        console.error('Failed to fetch users:', error);
+        console.error('Failed to fetch data:', error);
+        toast.error('Failed to fetch users or delegations');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUsers();
+    fetchData();
   }, []);
 
+  useEffect(() => {
+  const handleSearch = async (query) => {
+    const token = localStorage.getItem('token');
+
+    if (!query) {
+      // إذا خانة البحث فارغة، جلب كل المستخدمين
+      fetchAllUsers();
+      return;
+    }
+
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/users/search?query=${encodeURIComponent(query)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // تهيئة المستخدمين كما في fetchAllUsers
+      const formattedUsers = Array.isArray(res.data)
+  ? res.data.map((user) => {
+      let displayStatus = 'Blocked';
+      if (user.status === 1) displayStatus = user.email_verified_at ? 'Active' : 'Pending';
+
+      const sectionObj = sections.find((s) => s.id === user.section_id);
+      const sectionName = sectionObj?.name || 'Unknown';
+      const divisionName = sectionObj?.division || 'Unknown';
+      const delegationName = delegations[user.role_id]?.get(user.id) || 'None';
+
+      return {
+        ...user,
+        role: roleMap[user.role_id] || 'Unknown',
+        status: displayStatus,
+        rawStatus: user.status,
+        section: sectionName,
+        division: divisionName,
+        delegation: delegationName,
+      };
+    })
+  : [];
 
 
-  const handleAddUser = (formData) => {
-    console.log('New User:', formData);
-
+      setUsers(formattedUsers);
+      setCurrentPage(1); // إعادة الصفحة للأولى عند البحث
+    } catch (error) {
+      console.error('Search failed:', error);
+      toast.error(error.response?.data?.message || 'Search failed');
+    }
   };
+
+  window.addEventListener('sectionSearch', (e) => handleSearch(e.detail));
+
+  return () => window.removeEventListener('sectionSearch', (e) => handleSearch(e.detail));
+}, [sections, delegations]);
+
+const fetchAllUsers = async () => {
+  const token = localStorage.getItem('token');
+  setLoading(true);
+  try {
+    const [usersRes, sectionsRes] = await Promise.all([
+      axios.get(`${API_BASE_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+      axios.get(`${API_BASE_URL}/api/sections`, { headers: { Authorization: `Bearer ${token}` } }),
+    ]);
+
+    setSections(sectionsRes.data);
+
+     const roleIds = [...new Set(usersRes.data.map(u => u.role_id))];
+        const delegationData = {};
+        await Promise.all(
+          roleIds.map(async (roleId) => {
+            const res = await axios.get(`${API_BASE_URL}/api/userRoles/${roleId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const map = new Map();
+            res.data.forEach(u => map.set(u.id, u.delegation_id || 'None'));
+            delegationData[roleId] = map;
+          })
+        );
+        setDelegations(delegationData);
+
+        // تنسيق المستخدمين مع section و delegation
+        const formattedUsers = usersRes.data.map((user) => {
+          let displayStatus = 'Blocked';
+          if (user.status === 1) displayStatus = user.email_verified_at ? 'Active' : 'Pending';
+
+          const sectionObj = sectionsRes.data.find((s) => s.id === user.section_id);
+          const sectionName = sectionObj?.name || 'Unknown';
+          const divisionName = sectionObj?.division || 'Unknown';
+          const delegationName = delegationData[user.role_id]?.get(user.id) || 'None';
+
+          return {
+            ...user,
+            role: roleMap[user.role_id] || 'Unknown',
+            status: displayStatus,
+            rawStatus: user.status,
+            section: sectionName,
+            division: divisionName,
+            delegation: delegationName,
+          };
+        });
+    setUsers(formattedUsers);
+  } catch (error) {
+    console.error('Failed to fetch data:', error);
+    toast.error('Failed to fetch users or delegations');
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  fetchAllUsers();
+}, []);
+
+
+
+  const handleAddUser = (newUser) => {
+    let displayStatus = 'Blocked';
+    if (newUser.status === 1) displayStatus = newUser.email_verified_at ? 'Active' : 'Pending';
+
+    const sectionName = sections.find((s) => s.id === newUser.section_id)?.name || 'Unknown';
+    const delegationName = delegations[newUser.role_id]?.get(newUser.id) || 'None';
+
+    const formatted = {
+      ...newUser,
+      role: roleMap[newUser.role_id] || 'Unknown',
+      status: displayStatus,
+      rawStatus: newUser.status,
+      position: newUser.position || '',
+      section: sectionName,
+      delegation: delegationName,
+    };
+
+    setUsers((prev) => [formatted, ...prev]);
+  };
+
+  const handleEdit = (row) => {
+    setSelectedUser(row);
+    setIsEditOpen(true);
+  };
+
+  const cleanObject = (obj) => {
+    const newObj = {};
+    Object.keys(obj).forEach((key) => {
+      if (obj[key] !== '' && obj[key] !== null && obj[key] !== undefined) {
+        newObj[key] = obj[key];
+      }
+    });
+    return newObj;
+  };
+
+
+  const handleUpdateUser = async (updatedUserData) => {
+    if (!selectedUser) return;
+
+    const token = localStorage.getItem('token');
+
+    const payload = cleanObject(updatedUserData);
+    try {
+      await axios.post(
+        `${API_BASE_URL}/api/update/${selectedUser.id}`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updated = { ...selectedUser, ...updatedUserData };
+
+      // حافظ على rawStatus كما هو
+      const displayStatus =
+        updated.rawStatus === 1
+          ? updated.email_verified_at
+            ? 'Active'
+            : 'Pending'
+          : 'Blocked'; // محظور
+
+      const sectionName = sections.find((s) => s.id === updated.section_id)?.name || 'Unknown';
+      const delegationName = delegations[updated.role_id]?.get(updated.id) || 'None';
+
+      const formatted = {
+        ...updated,
+        role: roleMap[updated.role_id] || 'Unknown',
+        status: displayStatus,
+        rawStatus: updated.rawStatus, // ← لا تغيّره
+        section: sectionName,
+        delegation: delegationName,
+      };
+
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? formatted : u)));
+      toast.success(`${updated.name} updated successfully!`);
+    } catch (error) {
+      console.error('Failed to update user:', error);
+      toast.error(error.response?.data?.message || 'Update failed');
+    } finally {
+      setIsEditOpen(false);
+    }
+  };
+
 
   const filtered =
     selectedTab === 'All users'
       ? users
       : selectedTab === 'Blocked Users'
-        ? users.filter((u) => u.status === 'Blocked')
+        ? users.filter((u) => u.rawStatus === 0) // فقط المحظورين
         : users.filter((u) => u.role === selectedTab.slice(0, -1));
+
 
   const pageSize = 10;
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -95,22 +310,43 @@ const UsersPage = () => {
   const handleRowClick = (row) => {
   };
 
-  const handleEdit = (row) => {
-    console.log('Edit user:', row);
-    setSelectedUser(row);
-    setIsEditOpen(true);
-  };
+  const handleBlockToggle = async (row) => {
+    const token = localStorage.getItem('token');
 
-  const handleUpdateUser = (updatedUserData) => {
-    console.log('Updated user:', updatedUserData);
-    setIsEditOpen(false);
-  };
+    // تحديد الحالة الجديدة بناءً على rawStatus (0 = blocked, 1 = active)
+    const newRawStatus = row.rawStatus === 1 ? 0 : 1;
 
-  const handleBlockToggle = (row) => {
-    console.log(
-      `${row.name} is now ${row.status === 'Inactive' ? 'Active' : 'Inactive'}`
-    );
+    try {
+      await axios.post(
+        `${API_BASE_URL}/api/block`,
+        {
+          user_id: row.id,
+          status: newRawStatus, // نرسل 0 أو 1
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // تحديث المستخدم محلياً
+      const displayStatus = newRawStatus === 1 ? 'Active' : 'Inactive';
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === row.id
+            ? { ...user, status: displayStatus, rawStatus: newRawStatus }
+            : user
+        )
+      );
+
+      toast.success(
+        `${row.name} has been ${newRawStatus === 1 ? 'unblocked' : 'blocked'} successfully!`
+      );
+    } catch (error) {
+      console.error('Failed to block/unblock user:', error);
+      toast.error(error.response?.data?.message || 'Action failed');
+    }
   };
+  
+
+
 
   const columns = [
     { header: 'Name', accessor: 'name' },
@@ -137,11 +373,9 @@ const UsersPage = () => {
       ),
     },
     { header: 'Position', accessor: 'position' },
-    {
-      header: 'Status',
-      accessor: 'status',
-      cell: (val) => <StatusBadge value={val} colorMap={userStatusColors} />,
-    },
+    { header: 'Section', accessor: 'section' },
+    { header: 'Division', accessor: 'division' },
+    { header: 'Delegation', accessor: 'delegation' },
     {
       header: 'Edit',
       accessor: 'edit',
@@ -158,17 +392,15 @@ const UsersPage = () => {
       accessor: 'block',
       cell: (_, row) => (
         <OutlineButton
-          title={
-            row.status === 'Inactive' || row.status === 'Suspended'
-              ? 'Unblock'
-              : 'Block'
-          }
+          title={row.rawStatus === 0 ? 'Unblock' : 'Block'}
           color="danger"
           onClick={() => handleBlockToggle(row)}
         />
+
       ),
     },
   ];
+
 
   return (
     <div className="px-6 pt-6">
@@ -182,11 +414,19 @@ const UsersPage = () => {
           setCurrentPage(1);
         }}
       />
-      <DynamicTable
-        columns={columns}
-        data={paginated}
-        onRowClick={handleRowClick}
-      />
+      <div className="relative w-full">
+        {loading && (
+          <div className="absolute inset-0  m-20 flex items-center justify-center bg-white/70 z-10">
+            <div className="loader"></div>
+          </div>
+        )}
+        <DynamicTable
+          columns={columns}
+          data={paginated}
+          onRowClick={handleRowClick}
+        />
+      </div>
+
 
       <Pagination
         currentPage={currentPage}

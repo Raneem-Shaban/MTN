@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../store/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -16,11 +16,10 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    // تحقق من الجلسة عند تحميل الصفحة
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) navigate('/');
-    }, [navigate]);
+    const { isAuthenticated } = useSelector(state => state.auth);
+useEffect(() => {
+    if (isAuthenticated) navigate('/');
+}, [isAuthenticated, navigate]);
 
     const validateEmail = (email) =>
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

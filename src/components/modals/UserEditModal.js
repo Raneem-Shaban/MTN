@@ -4,66 +4,117 @@ import { Pencil } from 'lucide-react';
 import Input from '../common/inputs/Input';
 import Select from '../common/inputs/Select';
 import { FiChevronDown } from 'react-icons/fi';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../../constants/constants';
+import axios from 'axios';
 
 const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
+  const token = useSelector((state) => state.auth.user.token);
+
   const [form, setForm] = useState({
     name: '',
     email: '',
-    role: '',
-    section: '',
+    role_id: '',
+    section_id: '',
     position: '',
+    password: '',
+    password_confirmation: '',
+    delegation_id: '',
   });
 
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
+  const [roles, setRoles] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
+  const [loadingSections, setLoadingSections] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
+  // تحديث form عند تغيير المستخدم المحدد
   useEffect(() => {
     if (user) {
       setForm({
         name: user.name || '',
         email: user.email || '',
-        role: user.role || '',
-        section: user.section || '',
+        role_id: user.role_id || '',
+        section_id: user.section_id || '',
         position: user.position || '',
+        password: '',
+        password_confirmation: '',
+        delegation_id: user.delegation_id || '',
       });
     }
   }, [user]);
 
-  const validateField = (field, value) => {
-    if (!value) return 'Required';
-    return '';
-  };
+  // جلب roles, sections, users عند فتح المودال
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchRoles = async () => {
+      setLoadingRoles(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/roles`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setRoles(res.data);
+      } catch (err) {
+        toast.error('Failed to load roles');
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    const fetchSections = async () => {
+      setLoadingSections(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/sections`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSections(res.data);
+      } catch (err) {
+        toast.error('Failed to load sections');
+      } finally {
+        setLoadingSections(false);
+      }
+    };
+
+    const fetchUsers = async () => {
+      setLoadingUsers(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUsers(res.data);
+      } catch (err) {
+        toast.error('Failed to load users');
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchRoles();
+    fetchSections();
+    fetchUsers();
+  }, [isOpen, token]);
 
   const handleChange = (field, value) => {
     setForm({ ...form, [field]: value });
-    if (touched[field]) {
-      const error = validateField(field, value);
-      setErrors({ ...errors, [field]: error });
-    }
   };
 
-  const handleBlur = (field) => {
-    setTouched({ ...touched, [field]: true });
-    const error = validateField(field, form[field]);
-    setErrors({ ...errors, [field]: error });
+  const cleanObject = (obj) => {
+    const newObj = {};
+    Object.keys(obj).forEach((key) => {
+      if (obj[key] !== '' && obj[key] !== null && obj[key] !== undefined) {
+        newObj[key] = obj[key];
+      }
+    });
+    return newObj;
   };
 
   const handleSubmit = () => {
-    const newErrors = {};
-    const newTouched = {};
-
-    for (const field in form) {
-      newErrors[field] = validateField(field, form[field]);
-      newTouched[field] = true;
-    }
-
-    setErrors(newErrors);
-    setTouched(newTouched);
-
-    if (Object.values(newErrors).every((e) => !e)) {
-      onSubmit(form);
-      onClose();
-    }
+    const cleanedForm = cleanObject(form);
+    onSubmit(form);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -89,48 +140,62 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
             label="Name"
             value={form.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            onBlur={() => handleBlur('name')}
-            error={touched.name && errors.name}
           />
+
           <Input
             label="Email"
             type="email"
             value={form.email}
             onChange={(e) => handleChange('email', e.target.value)}
-            onBlur={() => handleBlur('email')}
-            error={touched.email && errors.email}
           />
-          <div className="relative">
-            <Select
-              className="w-full border border-[var(--color-text-muted)] p-3 rounded appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
-              label="Role"
-              options={['Supervisor', 'Trainer', 'User']}
-              value={form.role}
-              onChange={(value) => handleChange('role', value)}
-              onBlur={() => handleBlur('role')}
-              error={touched.role && errors.role}
-            />
-            <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
-          </div>
-          <div className="relative">
-            <Select
-              className="w-full border border-[var(--color-text-muted)] p-3 rounded appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
-              label="Section"
-              options={['Training', 'Support', 'Sales']}
-              value={form.section}
-              onChange={(value) => handleChange('section', value)}
-              onBlur={() => handleBlur('section')}
-              error={touched.section && errors.section}
-            />
-            <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
-          </div>
+
+          <Input
+            label="Password"
+            type="password"
+            value={form.password}
+            onChange={(e) => handleChange('password', e.target.value)}
+          />
+
+          <Input
+            label="Confirm Password"
+            type="password"
+            value={form.password_confirmation}
+            onChange={(e) => handleChange('password_confirmation', e.target.value)}
+          />
+
           <Input
             label="Position"
             value={form.position}
             onChange={(e) => handleChange('position', e.target.value)}
-            onBlur={() => handleBlur('position')}
-            error={touched.position && errors.position}
           />
+
+          <div className="relative">
+            <Select
+              label="Role"
+              options={roles.map((role) => role.name)}
+              value={roles.find(r => r.id === form.role_id)?.name || ''}
+              onChange={(value) => {
+                const selectedRole = roles.find(r => r.name === value);
+                handleChange('role_id', selectedRole?.id || '');
+              }}
+            />
+            <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
+          </div>
+
+          {form.role_id === 3 && (
+            <div className="relative">
+              <Select
+                label="Delegation"
+                options={users.map((u) => u.name)}
+                value={users.find(u => u.id === form.delegation_id)?.name || ''}
+                onChange={(value) => {
+                  const selectedUser = users.find(u => u.name === value);
+                  handleChange('delegation_id', selectedUser?.id || '');
+                }}
+              />
+              <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6">

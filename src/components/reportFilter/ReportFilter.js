@@ -1,87 +1,84 @@
 import React, { useState } from 'react';
-import { FiCalendar, FiBarChart2, FiPlus } from 'react-icons/fi';
+import { FiCalendar, FiPlus, FiDatabase, FiUsers, FiLayers } from 'react-icons/fi';
 
 const ReportFilter = ({ onCreate }) => {
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [reportType, setReportType] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [reportType, setReportType] = useState('');
 
-    const handleCreate = () => {
-        if (onCreate) {
-            onCreate({ startDate, endDate, reportType });
-        }
-    };
+  const handleCreate = () => {
+    if (!reportType) {
+      alert('Please select a report type.');
+      return;
+    }
+    if (onCreate) {
+      onCreate({ startDate, endDate, reportType });
+    }
+  };
 
-    return (
-        <div className="bg-[var(--color-bg)] border shadow-sm rounded-2xl p-6 md:p-8 space-y-6 max-w-full">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex flex-col">
-                    <label className="text-sm text-[var(--color-text-accent)] font-medium mb-2 flex items-center gap-1">
-                        <FiCalendar className="text-[var(--color-text-accent)]" />
-                        Start Date
-                    </label>
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="px-4 py-2 rounded-xl border border-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)] transition shadow-sm"
-                    />
-                </div>
+  const reportOptions = [
+    { name: 'System Report', icon: <FiDatabase /> },
+    { name: 'Trainer Report', icon: <FiUsers /> },
+    { name: 'Category Report', icon: <FiLayers /> },
+  ];
 
-                <div className="flex flex-col">
-                    <label className="text-sm text-[var(--color-text-accent)] font-medium mb-2 flex items-center gap-1">
-                        <FiCalendar className="text-[var(--color-text-accent)]" />
-                        End Date
-                    </label>
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="px-4 py-2 rounded-xl border border-[var(--color-text-muted)]  focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]  focus:border-[var(--color-secondary)] transition shadow-sm"
-                    />
-                </div>
+  return (
+    <div className="bg-[var(--color-surface)] border border-[var(--color-border)] shadow-xl rounded-3xl p-4 sm:p-6 md:p-4 space-y-6 md:space-y-8 transition-all hover:shadow-2xl max-w-6xl mx-auto">
+      
+      {/* Report Type Buttons */}
+      <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 md:gap-6">
+        {reportOptions.map((type) => (
+          <button
+            key={type.name}
+            onClick={() => setReportType(type.name)}
+            className={`flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl font-medium text-base transition-all transform
+              ${reportType === type.name
+                ? 'bg-[var(--color-primary)] text-[var(--color-white)] shadow-lg scale-105'
+                : 'bg-[var(--color-light-gray)] text-[var(--color-text-main)] hover:bg-[var(--color-primary-hover)] hover:text-[var(--color-white)] hover:scale-105'}
+            `}
+          >
+            {type.icon}
+            <span className="hidden sm:inline">{type.name}</span>
+          </button>
+        ))}
+      </div>
 
-                <div className="flex flex-col">
-                    <label className="text-sm text-[var(--color-text-accent)] font-medium mb-2 flex items-center gap-1">
-                        <FiBarChart2 className="text-[var(--color-text-accent)]" />
-                        Reporting Type
-                    </label>
-                    <select
-                        value={reportType}
-                        onChange={(e) => setReportType(e.target.value)}
-                        className="px-4 py-2 rounded-xl border border-[var(--color-text-muted)] bg-[var(--color-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] focus:border-[var(--color-secondary)]  transition shadow-sm"
-                    >
-                        <option value="">Choose a reporting type</option>
-                        <option>Number of users</option>
-                        <option>Number of active users</option>
-                        <option>Number of trainers</option>
-                        <option>Number of active trainers</option>
-                        <option>Number of sections</option>
-                        <option>Number of categories</option>
-                        <option>Number of active categories</option>
-                        <option>Number of all inquiries</option>
-                        <option>Number of closed inquiries</option>
-                        <option>Number of opened inquiries</option>
-                        <option>Number of pending inquiries</option>
-                        <option>Number of reopened inquiries</option>
-                        <option>Average closing time (hours)</option>
-                        <option>Average of evaluation</option>
-                    </select>
-                </div>
-            </div>
+      {/* Dates */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+        {[
+          { label: 'Start Date', value: startDate, setter: setStartDate },
+          { label: 'End Date', value: endDate, setter: setEndDate },
+        ].map((date) => (
+          <div
+            key={date.label}
+            className="flex flex-col bg-[var(--color-white)] p-3 sm:p-4 rounded-2xl shadow-sm hover:shadow-md transition"
+          >
+            <label className="text-sm font-medium mb-2 flex items-center gap-2 text-[var(--color-text-accent)]">
+              <FiCalendar className="text-[var(--color-dark-gray)]" />
+              {date.label}
+            </label>
+            <input
+              type="date"
+              value={date.value}
+              onChange={(e) => date.setter(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] transition shadow-sm"
+            />
+          </div>
+        ))}
+      </div>
 
-            <div className="flex justify-end">
-                <button
-                    onClick={handleCreate}
-                    className="flex items-center gap-2 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md transition-all bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-hover)]"
-                >
-                    <FiPlus />
-                    Create Report
-                </button>
-
-            </div>
-        </div>
-    );
+      {/* Create Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleCreate}
+          className="inline-flex items-center gap-2 sm:gap-3 text-[var(--color-white)] font-bold px-5 sm:px-7 py-2.5 sm:py-3 rounded-2xl shadow-lg bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] hover:scale-105 hover:shadow-2xl transition-all"
+        >
+          <FiPlus className="text-lg sm:text-xl" />
+          <span className="hidden sm:inline">Create Report</span>
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default ReportFilter;

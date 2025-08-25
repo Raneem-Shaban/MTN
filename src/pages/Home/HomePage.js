@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { FaQuestion, FaReply, FaStar, FaChartPie } from 'react-icons/fa';
+import { FaQuestion, FaReply, FaStar, FaChartPie, FaHourglassHalf } from 'react-icons/fa';
 import StatCard from '../../components/common/cards/StatCard';
 import { API_BASE_URL } from '../../constants/constants';
 import axios from 'axios';
@@ -41,26 +41,61 @@ const HomePage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('week');
   const lineData = useMemo(() => fullLineData[selectedPeriod], [selectedPeriod]);
 
- const categoryData = useMemo(() => [
-  { name: 'Category A', count: 40 },
-  { name: 'Category B', count: 25 },
-  { name: 'Category C', count: 35 },
-], []);
+  
+// داخل الـ component
+const statsList = [
+  {
+    title: 'Open Inquiries',
+    count: stats.opened_inquiries,
+    icon: FaQuestion,
+    iconColorVar: '--color-primary',
+  },
+  {
+    title: 'Closed Inquiries',
+    count: stats.closed_inquiries,
+    icon: FaQuestion,
+    iconColorVar: '--color-secondary',
+  },
+  {
+    title: 'Pending Inquiries',
+    count: stats.pending_inquiries,
+    icon: FaHourglassHalf,
+    iconColorVar: '--color-danger',
+  },
+  {
+    title: 'Response Rate (hrs)',
+    count: stats.average_handling_time,
+    icon: FaReply,
+    iconColorVar: '--color-primary',
+  },
+  {
+    title: 'Average Rating',
+    count: stats.average_ratings,
+    icon: FaStar,
+    iconColorVar: '--color-secondary',
+  },
+];
 
-const trainerPerformanceData = useMemo(() => [
-  { name: 'Trainer A', inquiries: 20, closed: 18 },
-  { name: 'Trainer B', inquiries: 25, closed: 22 },
-  { name: 'Trainer C', inquiries: 15, closed: 14 },
-  { name: 'Trainer D', inquiries: 30, closed: 29 },
-], []);
+  const categoryData = useMemo(() => [
+    { name: 'Category A', count: 40 },
+    { name: 'Category B', count: 25 },
+    { name: 'Category C', count: 35 },
+  ], []);
 
-const departmentEvaluationData = useMemo(() => [
-  { subject: 'Speed', value: 85, fullMark: 100 },
-  { subject: 'Quality', value: 92, fullMark: 100 },
-  { subject: 'Follow-up', value: 78, fullMark: 100 },
-  { subject: 'Clarity', value: 88, fullMark: 100 },
-  { subject: 'User Feedback', value: 91, fullMark: 100 },
-], []);
+  const trainerPerformanceData = useMemo(() => [
+    { name: 'Trainer A', inquiries: 20, closed: 18 },
+    { name: 'Trainer B', inquiries: 25, closed: 22 },
+    { name: 'Trainer C', inquiries: 15, closed: 14 },
+    { name: 'Trainer D', inquiries: 30, closed: 29 },
+  ], []);
+
+  const departmentEvaluationData = useMemo(() => [
+    { subject: 'Speed', value: 85, fullMark: 100 },
+    { subject: 'Quality', value: 92, fullMark: 100 },
+    { subject: 'Follow-up', value: 78, fullMark: 100 },
+    { subject: 'Clarity', value: 88, fullMark: 100 },
+    { subject: 'User Feedback', value: 91, fullMark: 100 },
+  ], []);
 
   const handlePeriodChange = useCallback((period) => {
     setSelectedPeriod(period);
@@ -71,17 +106,17 @@ const departmentEvaluationData = useMemo(() => [
       const token = localStorage.getItem('token');
       setLoadingStats(true);
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/inquiries/Statistics`, {
+        const res = await axios.get(`${API_BASE_URL}/api/inquiries/statistics`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        setStats(res.data);
-        setExtraStats({
-          reassigned_inquiries: res.data.reassigned_inquiries,
+        setStats({
+          opened_inquiries: res.data.opened_inquiries,
           pending_inquiries: res.data.pending_inquiries,
-          kpi_compliance: res.data.kpi_compliance,
-          trainer_avg_rating: res.data.trainer_avg_rating,
+          closed_inquiries: res.data.closed_inquiries,
+          average_handling_time: res.data.average_handling_time,
+          average_ratings: res.data.average_ratings,
         });
       } catch (err) {
         toast.error('Failed to load statistics');
@@ -100,57 +135,28 @@ const departmentEvaluationData = useMemo(() => [
         Dashboard
       </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-        {loadingStats ? (
-          Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className="animate-pulse rounded-lg bg-[var(--color-bg-secondary)] p-4 h-24 flex flex-col justify-center"
-            >
-              <div className="h-4 bg-[var(--color-border)] rounded w-2/3 mb-2"></div>
-              <div className="h-6 bg-[var(--color-border)] rounded w-1/3"></div>
-            </div>
-          ))
-        ) : (
-          <>
-            <StatCard title="Open Inquiries" count={stats.opened_inquiries} icon={FaQuestion} iconColorVar="--color-primary" />
-            <StatCard title="Closed Inquiries" count={stats.closed_inquiries} icon={FaQuestion} iconColorVar="--color-secondary" />
-            <StatCard title="Response Rate (hrs)" count={stats.average_handling_time} icon={FaReply} iconColorVar="--color-danger" />
-            <StatCard title="Average Rating" count={stats.average_ratings} icon={FaStar} iconColorVar="--color-primary" />
-          </>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+      
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
+  {loadingStats
+    ? Array.from({ length: 5 }).map((_, index) => (
+        <div
+          key={index}
+          className="animate-pulse rounded-lg bg-[var(--color-bg-secondary)] p-4 h-24 flex flex-col justify-center"
+        >
+          <div className="h-4 bg-[var(--color-border)] rounded w-2/3 mb-2"></div>
+          <div className="h-6 bg-[var(--color-border)] rounded w-1/3"></div>
+        </div>
+      ))
+    : statsList.map((item, idx) => (
         <StatCard
-          title="Reassigned Inquiries"
-          count={extraStats.reassigned_inquiries ?? 0}
-          icon={FaReply}
-          iconColorVar="--color-secondary"
+          key={idx}
+          title={item.title}
+          count={item.count}
+          icon={item.icon}
+          iconColorVar={item.iconColorVar}
         />
-
-        <StatCard
-          title="Pending Inquiries"
-          count={extraStats.pending_inquiries ?? 0}
-          icon={FaQuestion}
-          iconColorVar="--color-primary"
-        />
-
-        <StatCard
-          title="KPI Compliance (%)"
-          count={extraStats.kpi_compliance ?? 0}
-          icon={FaChartPie}
-          iconColorVar="--color-danger"
-        />
-
-        <StatCard
-          title="Trainer Avg Rating"
-          count={extraStats.trainer_avg_rating ?? 0}
-          icon={FaStar}
-          iconColorVar="--color-primary"
-        />
-      </div>
-
+      ))}
+</div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-[var(--color-surface)] p-6 rounded-xl shadow-md">

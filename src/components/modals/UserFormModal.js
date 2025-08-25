@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { FiEye, FiEyeOff, FiChevronDown } from 'react-icons/fi';
 import { API_BASE_URL } from '../../constants/constants';
 
-const UserFormModal = ({ isOpen, onClose }) => {
+const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
   const token = useSelector((state) => state.auth.user.token);
   const [form, setForm] = useState({
     name: '',
@@ -126,34 +126,36 @@ const UserFormModal = ({ isOpen, onClose }) => {
     setTouched(newTouched);
 
     if (Object.values(newErrors).every((e) => !e)) {
-      try {
-        await axios.post(
-          `${API_BASE_URL}/api/add_user`,
-          {
-            name: form.name,
-            email: form.email,
-            password: form.password,
-            password_confirmation: form.password_confirmation,
-            role_id,
-            section_id: getSectionId(form.section),
+    try {
+      const res = await axios.post(
+        `${API_BASE_URL}/api/add_user`,
+        {
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          password_confirmation: form.password_confirmation,
+          role_id,
+          section_id: getSectionId(form.section),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        }
+      );
 
-        toast.success('User added successfully!');
-        onClose();
-      } catch (error) {
-        console.error(error);
-        toast.error(
-          error.response?.data?.message || 'Failed to add user.'
-        );
-      }
+      toast.success('User added successfully!');
+      console.log("New user response:", res.data);
+      onSubmit && onSubmit(res.data.user); // ⚡ أرسل المستخدم الجديد للـ parent
+      onClose();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || 'Failed to add user.'
+      );
     }
-  };
+  }
+};
 
   if (!isOpen) return null;
 
