@@ -31,7 +31,7 @@ const routes = [
   {
     path: '/',
     element: <HomeWrapper />,
-    roles: [1, 2, 4, 5],
+    roles: [1, 2, 3, 4, 5], // الكل باستثناء المدرب
   },
   {
     path: '/users',
