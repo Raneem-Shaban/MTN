@@ -117,9 +117,10 @@ const UserHome = () => {
   }, []);
 
   // زر Show
-  const handleShowClick = (id) => {
-    navigate(`/details/${id}`);
-  };
+const handleShowClick = (id) => {
+  console.log('Show button clicked with ID:', id); // تحقق من قيمة الـ id هنا
+  navigate(`/inquirydetails/${id}`);
+};
 
   // استخراج أحدث favouriteId لعنصر ما من الحالة الحالية
   const resolveFavouriteId = async (inquiryId, headers) => {

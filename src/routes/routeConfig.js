@@ -31,7 +31,7 @@ const routes = [
   {
     path: '/',
     element: <HomeWrapper />,
-    roles: [1, 2, 3, 4, 5], // الكل باستثناء المدرب
+    roles: [1, 2, 3, 4, 5], 
   },
   {
     path: '/users',
@@ -76,7 +76,7 @@ const routes = [
   {
     path: '/inquiries',
     element: <InquiriresWrapper />,
-    roles: [1, 2, 3],
+    roles: [1, 2, 3, 4],
   },
   {
     path: '/details/:id',
@@ -84,7 +84,7 @@ const routes = [
     roles: [1, 2, 3],
   },
   {
-    path: '/details/:id',
+    path: '/inquirydetails/:id',
     element: <UserInquiryDetails />,
     roles: [4, 5],
   },

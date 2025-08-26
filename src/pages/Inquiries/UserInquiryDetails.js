@@ -314,8 +314,8 @@ const UserInquiryDetails = () => {
                   trainerName={inquiryData.assignee_user?.name || 'Unknown Trainer'}
                   trainerRole={inquiryData.assignee_user?.position || 'Trainer'}
                   trainerAvatar={inquiryData.assignee_user?.avatar || '/assets/img/default-avatar.png'}
-                  answerText={inquiryData.response?.text || 'No answer provided.'}
-                  date={formatDate(inquiryData.response?.created_at) || formatDate(inquiryData.created_at)}
+                  answerText={inquiryData.response??'No answer provided yet.'}
+                  date={formatDate(inquiryData.created_at) || formatDate(inquiryData.created_at)}
                   attachments={inquiryData.response?.attachments || []}
                   status={inquiryData.status?.id}
                 />
