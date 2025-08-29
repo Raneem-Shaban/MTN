@@ -31,8 +31,6 @@ const fullLineData = {
 };
 
 
-
-
 const HomePage = () => {
   const [stats, setStats] = useState({});
   const [extraStats, setExtraStats] = useState({});
