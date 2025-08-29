@@ -119,7 +119,7 @@ const UserHome = () => {
   // زر Show
 const handleShowClick = (id) => {
   console.log('Show button clicked with ID:', id); // تحقق من قيمة الـ id هنا
-  navigate(`/inquirydetails/${id}`);
+  navigate(`/details/${id}`);
 };
 
   // استخراج أحدث favouriteId لعنصر ما من الحالة الحالية

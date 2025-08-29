@@ -12,7 +12,7 @@ import {
 
 const allNavItems = [
   { label: 'Home', icon: <FaHome />, path: '/', roles: [1, 2, 3, 4, 5] },
-  { label: 'Inquiries', icon: <FaQuestionCircle />, path: '/inquiries', roles: [1, 2, 3] },
+  { label: 'Inquiries', icon: <FaQuestionCircle />, path: '/inquiries', roles: [1, 2, 3, 4] },
   { label: 'Users', icon: <FaUsers />, path: '/users', roles: [1, 2] },
   { label: 'Reports', icon: <FaChartBar />, path: '/reports', roles: [1, 2, 3] },
   { label: 'Trainers', icon: <FaChalkboardTeacher />, path: '/trainers', roles: [1, 2] },
@@ -20,7 +20,8 @@ const allNavItems = [
   { label: 'Categories', icon: <FaFolderOpen />, path: '/categories', roles: [1, 2] },
   { label: 'Evaluations', icon: <FaClipboardCheck />, path: '/evaluations', roles: [1, 2] },
   { label: 'Tasks', icon: <FaTasks />, path: '/tasks', roles: [1, 2] },
-  { label: 'Favorite', icon: <FaStar />, path: '/favorite', roles: [4, 5] },
+  { label: 'Favorite', icon: <FaStar />, path: '/favorite', roles: [5] },
+  { label: 'My Inquiries', icon: <FaStar />, path: '/myInquiries', roles: [5] },
   { label: 'Logout', icon: <FaSignOutAlt />, path: '/#', roles: [1, 2, 3, 4, 5], isLogout: true },
 ];
 

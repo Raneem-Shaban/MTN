@@ -13,14 +13,12 @@ import Categories from "../pages/Categories/Categories";
 import Evaluations from "../pages/Evaluations/Evaluations";
 import ReportsWrapper from "../pages/ReportsWrapper/ReportsWrapper";
 import HomeWrapper from "../pages/HomeWrapper/HomeWrapper";
-import UserLandingPage from "../pages/Landing/UserLandingPage";
-import UserInquiryDetails from "../pages/Inquiries/UserInquiryDetails";
 import UserAddInquery from "../pages/Inquiries/UserAddInquery";
-import InquiriresWrapper from "../pages/Inquiries/InquiriresWrapper/InquiriresWrapper";
+import InquiriresWrapper from "../pages/InquiriresWrapper/InquiriresWrapper"
 import Login from "../pages/Auth/Login";
-import InquiryDetails from "../pages/Inquiries/InquiryDetails";
 import TrainerDetails from "../pages/Trainers/TrainerDetails";
 import SectionDetails from "../pages/Sections/SectionDetails";
+import InquiryDetailsWrapper from "../pages/InquiryDetailsWrapper/InquiryDetailsWrapper";
 import Profile from "../pages/Auth/Profile";
 import UserDetails from "../pages/Users/UserDetails";
 
@@ -92,13 +90,8 @@ const routes = [
   },
   {
     path: '/details/:id',
-    element: <InquiryDetails />,
-    roles: [1, 2, 3],
-  },
-  {
-    path: '/inquirydetails/:id',
-    element: <UserInquiryDetails />,
-    roles: [4, 5],
+    element: <InquiryDetailsWrapper/>,
+    roles: [1, 2, 3, 4, 5],
   },
   {
     path: '/add',

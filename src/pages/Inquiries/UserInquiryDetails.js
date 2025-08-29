@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {FiPaperclip, FiX } from "react-icons/fi";
+import { FiPaperclip, FiX } from "react-icons/fi";
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -211,14 +211,15 @@ const UserInquiryDetails = () => {
 
     try {
       const formData = new FormData();
-      formData.append('text', reopenText);
+      formData.append('inquiry_id', id);
+      formData.append('response', reopenText);
       reopenFiles.forEach((f) => {
-        formData.append('attachments[]', f, f.name);
+      formData.append('attachments[]', f, f.name);
       });
       formData.append('status', '4');
 
       const resp = await axios.post(
-        `${API_BASE_URL}/api/inquiries/repoen/${id}`,
+        `${API_BASE_URL}/api/inquiries/reopen`,
         formData,
         {
           headers: {
@@ -314,7 +315,7 @@ const UserInquiryDetails = () => {
                   trainerName={inquiryData.assignee_user?.name || 'Unknown Trainer'}
                   trainerRole={inquiryData.assignee_user?.position || 'Trainer'}
                   trainerAvatar={inquiryData.assignee_user?.avatar || '/assets/img/default-avatar.png'}
-                  answerText={inquiryData.response??'No answer provided yet.'}
+                  answerText={inquiryData.response ?? 'No answer provided yet.'}
                   date={formatDate(inquiryData.created_at) || formatDate(inquiryData.created_at)}
                   attachments={inquiryData.response?.attachments || []}
                   status={inquiryData.status?.id}

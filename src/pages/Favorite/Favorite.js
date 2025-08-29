@@ -164,7 +164,7 @@ const Favorite = () => {
         <OutlineButton
           title="Show"
           color="primary"
-          onClick={() => navigate(`/inquirydetails/${row.id}`)}
+          onClick={() => navigate(`/details/${row.id}`)}
         />
       )
     },
