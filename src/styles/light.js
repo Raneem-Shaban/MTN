@@ -32,5 +32,8 @@ export const lightTheme = {
   '--color-category-two': '#F9BBBF',      
   '--color-category-three': '#FFF0B4', 
 
-  '--color-trainer-task':'#DBEAFE'
+  '--color-trainer-task':'#DBEAFE',
+
+  '--color-random': '#10B981',       
+  '--color-random-hover': '#059669'
 };

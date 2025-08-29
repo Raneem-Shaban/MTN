@@ -70,9 +70,9 @@ const Trainers = () => {
   ];
 
   return (
-    <div className="px-6 pt-6 overflow-hidden" dir="ltr">
+    <div className="px-6 py-20 overflow-hidden" dir="ltr">
       <h1 className="text-2xl font-bold text-[var(--color-text-main)] mb-4">
-        Trainers Overview
+        Trainers 
       </h1>
 
       <div className="flex flex-col h-[calc(100vh-120px)] relative">

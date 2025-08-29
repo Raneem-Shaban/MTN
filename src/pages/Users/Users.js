@@ -11,8 +11,9 @@ import { API_BASE_URL } from '../../constants/constants';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
-const tabs = ['All users', 'SuperAdmin', 'Admin', 'Trainer', 'User', 'Assistant', 'Blocked Users'];
+const tabs = ['All users', 'Admin', 'Trainer', 'User', 'Assistant', 'Blocked Users'];
 
 const userStatusColors = {
   Active: { bg: 'var(--color-status-open-bg)', text: 'var(--color-status-open)' },
@@ -40,7 +41,9 @@ const UsersPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [sections, setSections] = useState([]);
   const [delegations, setDelegations] = useState({});
+  const navigate = useNavigate();
 
+  const currentUser = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,114 +106,114 @@ const UsersPage = () => {
   }, []);
 
   useEffect(() => {
-  const handleSearch = async (query) => {
+    const handleSearch = async (query) => {
+      const token = localStorage.getItem('token');
+
+      if (!query) {
+        // إذا خانة البحث فارغة، جلب كل المستخدمين
+        fetchAllUsers();
+        return;
+      }
+
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/users/search?query=${encodeURIComponent(query)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // تهيئة المستخدمين كما في fetchAllUsers
+        const formattedUsers = Array.isArray(res.data)
+          ? res.data.map((user) => {
+            let displayStatus = 'Blocked';
+            if (user.status === 1) displayStatus = user.email_verified_at ? 'Active' : 'Pending';
+
+            const sectionObj = sections.find((s) => s.id === user.section_id);
+            const sectionName = sectionObj?.name || 'Unknown';
+            const divisionName = sectionObj?.division || 'Unknown';
+            const delegationName = delegations[user.role_id]?.get(user.id) || 'None';
+
+            return {
+              ...user,
+              role: roleMap[user.role_id] || 'Unknown',
+              status: displayStatus,
+              rawStatus: user.status,
+              section: sectionName,
+              division: divisionName,
+              delegation: delegationName,
+            };
+          })
+          : [];
+
+
+        setUsers(formattedUsers);
+        setCurrentPage(1); // إعادة الصفحة للأولى عند البحث
+      } catch (error) {
+        console.error('Search failed:', error);
+        toast.error(error.response?.data?.message || 'Search failed');
+      }
+    };
+
+    window.addEventListener('sectionSearch', (e) => handleSearch(e.detail));
+
+    return () => window.removeEventListener('sectionSearch', (e) => handleSearch(e.detail));
+  }, [sections, delegations]);
+
+  const fetchAllUsers = async () => {
     const token = localStorage.getItem('token');
-
-    if (!query) {
-      // إذا خانة البحث فارغة، جلب كل المستخدمين
-      fetchAllUsers();
-      return;
-    }
-
+    setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/users/search?query=${encodeURIComponent(query)}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const [usersRes, sectionsRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE_URL}/api/sections`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+
+      setSections(sectionsRes.data);
+
+      const roleIds = [...new Set(usersRes.data.map(u => u.role_id))];
+      const delegationData = {};
+      await Promise.all(
+        roleIds.map(async (roleId) => {
+          const res = await axios.get(`${API_BASE_URL}/api/userRoles/${roleId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const map = new Map();
+          res.data.forEach(u => map.set(u.id, u.delegation_id || 'None'));
+          delegationData[roleId] = map;
+        })
+      );
+      setDelegations(delegationData);
+
+      // تنسيق المستخدمين مع section و delegation
+      const formattedUsers = usersRes.data.map((user) => {
+        let displayStatus = 'Blocked';
+        if (user.status === 1) displayStatus = user.email_verified_at ? 'Active' : 'Pending';
+
+        const sectionObj = sectionsRes.data.find((s) => s.id === user.section_id);
+        const sectionName = sectionObj?.name || 'Unknown';
+        const divisionName = sectionObj?.division || 'Unknown';
+        const delegationName = delegationData[user.role_id]?.get(user.id) || 'None';
+
+        return {
+          ...user,
+          role: roleMap[user.role_id] || 'Unknown',
+          status: displayStatus,
+          rawStatus: user.status,
+          section: sectionName,
+          division: divisionName,
+          delegation: delegationName,
+        };
       });
-
-      // تهيئة المستخدمين كما في fetchAllUsers
-      const formattedUsers = Array.isArray(res.data)
-  ? res.data.map((user) => {
-      let displayStatus = 'Blocked';
-      if (user.status === 1) displayStatus = user.email_verified_at ? 'Active' : 'Pending';
-
-      const sectionObj = sections.find((s) => s.id === user.section_id);
-      const sectionName = sectionObj?.name || 'Unknown';
-      const divisionName = sectionObj?.division || 'Unknown';
-      const delegationName = delegations[user.role_id]?.get(user.id) || 'None';
-
-      return {
-        ...user,
-        role: roleMap[user.role_id] || 'Unknown',
-        status: displayStatus,
-        rawStatus: user.status,
-        section: sectionName,
-        division: divisionName,
-        delegation: delegationName,
-      };
-    })
-  : [];
-
-
       setUsers(formattedUsers);
-      setCurrentPage(1); // إعادة الصفحة للأولى عند البحث
     } catch (error) {
-      console.error('Search failed:', error);
-      toast.error(error.response?.data?.message || 'Search failed');
+      console.error('Failed to fetch data:', error);
+      toast.error('Failed to fetch users or delegations');
+    } finally {
+      setLoading(false);
     }
   };
 
-  window.addEventListener('sectionSearch', (e) => handleSearch(e.detail));
-
-  return () => window.removeEventListener('sectionSearch', (e) => handleSearch(e.detail));
-}, [sections, delegations]);
-
-const fetchAllUsers = async () => {
-  const token = localStorage.getItem('token');
-  setLoading(true);
-  try {
-    const [usersRes, sectionsRes] = await Promise.all([
-      axios.get(`${API_BASE_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
-      axios.get(`${API_BASE_URL}/api/sections`, { headers: { Authorization: `Bearer ${token}` } }),
-    ]);
-
-    setSections(sectionsRes.data);
-
-     const roleIds = [...new Set(usersRes.data.map(u => u.role_id))];
-        const delegationData = {};
-        await Promise.all(
-          roleIds.map(async (roleId) => {
-            const res = await axios.get(`${API_BASE_URL}/api/userRoles/${roleId}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            const map = new Map();
-            res.data.forEach(u => map.set(u.id, u.delegation_id || 'None'));
-            delegationData[roleId] = map;
-          })
-        );
-        setDelegations(delegationData);
-
-        // تنسيق المستخدمين مع section و delegation
-        const formattedUsers = usersRes.data.map((user) => {
-          let displayStatus = 'Blocked';
-          if (user.status === 1) displayStatus = user.email_verified_at ? 'Active' : 'Pending';
-
-          const sectionObj = sectionsRes.data.find((s) => s.id === user.section_id);
-          const sectionName = sectionObj?.name || 'Unknown';
-          const divisionName = sectionObj?.division || 'Unknown';
-          const delegationName = delegationData[user.role_id]?.get(user.id) || 'None';
-
-          return {
-            ...user,
-            role: roleMap[user.role_id] || 'Unknown',
-            status: displayStatus,
-            rawStatus: user.status,
-            section: sectionName,
-            division: divisionName,
-            delegation: delegationName,
-          };
-        });
-    setUsers(formattedUsers);
-  } catch (error) {
-    console.error('Failed to fetch data:', error);
-    toast.error('Failed to fetch users or delegations');
-  } finally {
-    setLoading(false);
-  }
-};
-
-useEffect(() => {
-  fetchAllUsers();
-}, []);
+  useEffect(() => {
+    fetchAllUsers();
+  }, []);
 
 
 
@@ -258,7 +261,7 @@ useEffect(() => {
     const payload = cleanObject(updatedUserData);
     try {
       await axios.post(
-        `${API_BASE_URL}/api/update/${selectedUser.id}`,
+        `${API_BASE_URL}/api/updateProfile/${selectedUser.id}`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -301,7 +304,7 @@ useEffect(() => {
       ? users
       : selectedTab === 'Blocked Users'
         ? users.filter((u) => u.rawStatus === 0) // فقط المحظورين
-        : users.filter((u) => u.role === selectedTab.slice(0, -1));
+        : users.filter((u) => u.role === selectedTab);
 
 
   const pageSize = 10;
@@ -344,7 +347,7 @@ useEffect(() => {
       toast.error(error.response?.data?.message || 'Action failed');
     }
   };
-  
+
 
 
 
@@ -377,6 +380,17 @@ useEffect(() => {
     { header: 'Division', accessor: 'division' },
     { header: 'Delegation', accessor: 'delegation' },
     {
+    header: 'Show Details', // ← العمود الجديد
+    accessor: 'details',
+    cell: (_, row) => (
+      <OutlineButton
+        title="Show Details"
+        color="primary"
+        onClick={() => navigate(`/users/${row.id}`)}
+      />
+    ),
+  },
+    {
       header: 'Edit',
       accessor: 'edit',
       cell: (_, row) => (
@@ -403,7 +417,7 @@ useEffect(() => {
 
 
   return (
-    <div className="px-6 pt-6">
+    <div className="px-6 py-20">
       <h1 className="text-2xl font-bold mb-2 text-[var(--color-text-main)]">Users</h1>
 
       <FilterTabs
@@ -414,12 +428,13 @@ useEffect(() => {
           setCurrentPage(1);
         }}
       />
-      <div className="relative w-full">
+      <div className="flex flex-col h-[calc(100vh-120px)] relative">
         {loading && (
-          <div className="absolute inset-0  m-20 flex items-center justify-center bg-white/70 z-10">
+          <div className="absolute inset-0 flex items-center justify-center z-10">
             <div className="loader"></div>
           </div>
         )}
+
         <DynamicTable
           columns={columns}
           data={paginated}
@@ -434,10 +449,12 @@ useEffect(() => {
         onPageChange={setCurrentPage}
       />
 
-      <FloatingActionButton
-        onClick={() => setIsModalOpen(true)}
-        label="Add User"
-      />
+      {currentUser.role_id !== 2 && (
+        <FloatingActionButton
+          onClick={() => setIsModalOpen(true)}
+          label="Add User"
+        />
+      )}
 
       <UserFormModal
         isOpen={isModalOpen}

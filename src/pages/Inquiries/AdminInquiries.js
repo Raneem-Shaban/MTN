@@ -163,6 +163,7 @@ const AdminInquiries = () => {
         status: statusObj.name || 'Unknown',
         trainer: assigneeObj.name || item.trainer || 'Unknown',
         category: categoryObj.name || item.category?.name || 'Unknown',
+        created_at: inquiry.created_at || item.created_at || '—',
       };
     })
     : [];
@@ -187,7 +188,14 @@ const AdminInquiries = () => {
   const columns = [
     { header: 'ID', accessor: 'id' },
     { header: 'Title', accessor: 'title' },
-    { header: 'Body', accessor: 'body' },
+    {
+      header: 'Body',
+      accessor: 'body',
+      cell: (value) => {
+        if (!value) return '—';
+        return value.length > 30 ? value.substring(0, 30) + "..." : value;
+      },
+    },
     { header: 'Response', accessor: 'response' },
     {
       header: 'Status',
@@ -198,6 +206,21 @@ const AdminInquiries = () => {
     },
     { header: 'Trainer Name', accessor: 'trainer' },
     { header: 'Category', accessor: 'category' },
+    {
+      header: 'Created At',
+      accessor: 'created_at',
+      cell: (value) => {
+        if (!value) return '—';
+        const date = new Date(value);
+        return date.toLocaleString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      },
+    },
 
     {
       header: 'Details',
@@ -263,19 +286,10 @@ const AdminInquiries = () => {
     },
   ];
 
-
-  // if (loading) {
-  //   return (
-  //     <div className="flex min-h-screen items-center justify-center w-full">
-  //       <div className="loader"></div>
-  //     </div>
-  //   );
-  // }
-
   return (
-    <div className="p-6">
+    <div className="p-6 py-20">
       <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--color-text-main)' }}>
-        Inquiries Management
+        Inquiries
       </h1>
 
       <FilterTabs

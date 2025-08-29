@@ -33,34 +33,47 @@ const TrainerDetails = () => {
 
         const { inqs, totalResponded, opened, closed, pending, reopened } = response.data;
 
-        // لتخزين بعض الإحصائيات عن المدرّب
-        setTrainer({
-          id: trainerId,
-          totalResponded,
-          opened,
-          closed,
-          pending,
-          reopened,
-        });
+        setTrainer({ id: trainerId, totalResponded, opened, closed, pending, reopened });
 
-        // تهيئة الاستعلامات بنفس أسلوب SectionDetails
-        const formatted = inqs.map((inq) => ({
-          id: inq.id,
-          title: inq.title,
-          body: inq.body,
-          response: inq.response,
-          createdAt: inq.created_at,
-          closedAt: inq.closed_at,
-          deletedAt: inq.deleted_at,
-          userName: inq.user?.name,
-          assigneeName: inq.assignee_user?.name,
-          categoryName: inq.category?.name,
-          statusName: inq.status?.name,
-          followUps: inq.follow_ups,
-          attachments: inq.attachments || [] 
-        }));
+        // جلب التفاصيل لكل استعلام مع الـ ratings
+        const detailedInqs = await Promise.all(
+          inqs.map(async (inq) => {
+            try {
+              const detailRes = await axios.get(
+                `${API_BASE_URL}/api/inquiries/${inq.id}`,
+                {
+                  headers: {
+                    Accept: "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+              const detail = detailRes.data;
 
-        setInquiries(formatted);
+              return {
+                id: inq.id,
+                title: inq.title,
+                body: inq.body,
+                response: inq.response,
+                createdAt: inq.created_at,
+                closedAt: inq.closed_at,
+                deletedAt: inq.deleted_at,
+                userName: inq.user?.name,
+                assigneeName: inq.assignee_user?.name,
+                categoryName: inq.category?.name,
+                statusName: inq.status?.name,
+                followUps: inq.follow_ups,
+                attachments: inq.attachments || [],
+                ratings: detail.ratings || []   // 👈 ناخدها من التفاصيل
+              };
+            } catch (err) {
+              console.error("Failed to fetch inquiry details", err);
+              return inq;
+            }
+          })
+        );
+
+        setInquiries(detailedInqs);
       } catch (error) {
         console.error("Error fetching trainer inquiries:", error);
         toast.error("Failed to load trainer details");
@@ -73,11 +86,18 @@ const TrainerDetails = () => {
   }, [trainerId]);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="flex flex-col h-[calc(100vh-120px)] relative">
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="loader"></div>
+        </div>
+      </div>
+    );
   }
 
+
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto py-20">
       {/* Trainer Info Card */}
       <div
         className="shadow-lg rounded-3xl p-8 mb-8 border border-[var(--color-border)]"
@@ -114,6 +134,7 @@ const TrainerDetails = () => {
           {inquiries.map((inq) => (
             <InquiryAnswer
               key={inq.id}
+              inquiryId={inq.id}
               question={inq.title}
               answer={inq.body}
               response={inq.response}
@@ -130,7 +151,8 @@ const TrainerDetails = () => {
               categoryName={inq.categoryName}
               statusName={inq.statusName}
               followUps={inq.followUps}
-              attachments={inq.attachments} 
+              attachments={inq.attachments}
+              ratings={inq.ratings}
             />
           ))}
         </div>

@@ -21,6 +21,8 @@ import Login from "../pages/Auth/Login";
 import InquiryDetails from "../pages/Inquiries/InquiryDetails";
 import TrainerDetails from "../pages/Trainers/TrainerDetails";
 import SectionDetails from "../pages/Sections/SectionDetails";
+import Profile from "../pages/Auth/Profile";
+import UserDetails from "../pages/Users/UserDetails";
 
 const routes = [
   {
@@ -34,8 +36,18 @@ const routes = [
     roles: [1, 2, 3, 4, 5], 
   },
   {
+    path: '/profile',
+    element: <Profile/>,
+    roles: [1, 2, 3, 4, 5], 
+  },
+  {
     path: '/users',
     element: <Users />,
+    roles: [1, 2],
+  },
+  {
+    path: '/users/:userId',
+    element: <UserDetails/>,
     roles: [1, 2],
   },
   {

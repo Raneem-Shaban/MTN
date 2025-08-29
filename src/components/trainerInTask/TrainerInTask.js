@@ -1,159 +1,162 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Pencil } from 'lucide-react';
 import CategoryItem from '../categoryItem/CategoryItem';
 import TrainerSelectModal from '../modals/TrainerSelectModal';
 import '../../App.css';
 import { API_BASE_URL } from '../../constants/constants';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const TrainerInTask = ({ name, delegationName, tasks, isResetting, allTrainers, trainerId, onTaskCreated, onCategoryAssigned }) => {
-
-  const categories = tasks.map((task) => ({
-    id: task.category.id,
-    name: task.category.name,
-    description: task.category.description,
+const TrainerInTask = ({ name, delegationName, tasks, allTrainers, trainerId, onCategoryAssigned, selectedCategories,
+  setSelectedCategories }) => {
+  const categories = tasks.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    description: cat.description,
+    ownerName: cat.owner?.name || name,
   }));
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(delegationName || '');
   const [justDropped, setJustDropped] = useState(false);
   const modalRef = useRef(null);
 
-  const colorCycle = ['bg-category-one', 'bg-category-two', 'bg-category-three'];
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = async (e) => {
-    e.preventDefault();
-
-    const data = e.dataTransfer.getData('category-from-container');
-    if (data) {
-      const category = JSON.parse(data);
-
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.post(
-          `${API_BASE_URL}/api/tasks`,
-          {
-            category_id: category.id,
-            owner_id: trainerId,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json"
-            }
-          }
-        );
-
-        console.log("Task created:", res.data);
-
-        if (onTaskCreated) {
-          if (res.data.task) {
-            onTaskCreated(res.data.task);
-          } else {
-            onTaskCreated({
-              id: Date.now(),
-              owner: { id: trainerId, name },
-              category,
-              delegation: null,
-            });
-          }
-        }
-
-        if (onCategoryAssigned) {
-          onCategoryAssigned(category.id);
-        }
-
-        setJustDropped(true);
-        setTimeout(() => setJustDropped(false), 800);
-
-      } catch (error) {
-        console.error("Error creating task:", error.response?.data || error.message);
-      }
-    }
-  };
-
-  const handleDragStart = (e, category) => {
-  e.dataTransfer.setData(
-    "category-from-trainer",
-    JSON.stringify({ cat: category, trainerId })
-  );
-
-  const element = e.currentTarget.cloneNode(true);
-  element.style.position = "absolute";
-  element.style.top = "-9999px";
-  element.style.left = "-9999px";
-  document.body.appendChild(element);
-  e.dataTransfer.setDragImage(element, 0, 0);
-  setTimeout(() => document.body.removeChild(element), 0);
-};
-
-
+  const colorCycle = [
+    'bg-[var(--color-category-one)]',
+    'bg-[var(--color-category-two)]',
+    'bg-[var(--color-category-three)]'
+  ];
 
   return (
-    <div
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      className={`w-36 h-full rounded-lg bg-[var(--color-trainer-task)] p-4 text-center shadow-md transition-transform duration-300 ${justDropped ? 'scale-105 bg-green-100' : ''
-        }`}
+    <motion.div
+      className={`w-44 h-80 rounded-2xl 
+                  bg-[var(--color-trainer-task)] 
+                  border border-[var(--color-border)] 
+                  p-4 text-center shadow-md 
+                  transition-transform duration-300 
+                  overflow-y-auto`}
+      animate={justDropped ? { scale: 1.05 } : { scale: 1 }}
+      transition={{ duration: 0.3 }}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={async (e) => {
+        e.preventDefault();
+        const categoryIds = JSON.parse(e.dataTransfer.getData("categoryIds"));
+        if (!categoryIds || categoryIds.length === 0) return;
+
+        try {
+          const token = localStorage.getItem("token");
+          await axios.post(
+            `${API_BASE_URL}/api/bulktasks`,
+            { category_ids: categoryIds, owner_id: trainerId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          toast.success("Categories assigned successfully");
+
+          if (onCategoryAssigned) {
+            categoryIds.forEach(id => onCategoryAssigned(id, trainerId));
+          }
+
+          // Clear the selected categories after successful drop
+          setSelectedCategories(prev =>
+            prev.filter(cat => !categoryIds.includes(cat.id))
+          );
+
+          setJustDropped(true);
+          setTimeout(() => setJustDropped(false), 600);
+
+        } catch (error) {
+          console.error("Error assigning categories:", error);
+          toast.error("Failed to assign categories");
+        }
+      }}
     >
-      <div className="flex flex-col h-full">
-        <h3 className="text-lg font-semibold text-[var(--color-text-main)] mb-2">{name}</h3>
-        <div className="border-t border-white my-2" />
-
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[13px] text-[var(--color-text-main)]">{selected || 'No Delegation'}</span>
-          <button
-            onClick={() => setIsOpen(true)}
-            aria-label="Edit Delegation"
-            className="p-1.5 rounded-full border border-[var(--color-border)] bg-white shadow-sm hover:bg-blue-100 transition text-blue-600 hover:text-blue-800"
-          >
-            <Pencil size={16} />
-          </button>
+      {/* Header */}
+      <div className="flex flex-col items-center mb-3">
+        <div className="w-12 h-12 rounded-full 
+                        bg-[var(--color-secondary)] 
+                        flex items-center justify-center 
+                        text-[var(--color-white)] font-bold shadow-sm">
+          {name[0]}
         </div>
+        <h3 className="text-lg font-semibold text-[var(--color-text-main)] mt-2">{name}</h3>
+      </div>
 
-        {isOpen && (
-          <TrainerSelectModal
-            allTrainers={allTrainers}
-            selected={selected}
-            onSelect={setSelected}
-            onClose={() => setIsOpen(false)}
-          />
-        )}
+      {/* Delegation */}
+      <div className="flex items-center justify-between 
+                      bg-[var(--color-surface)] 
+                      px-3 py-2 rounded-lg mb-4">
+        <span className="text-sm text-[var(--color-text-muted)] truncate">
+          {selected || 'No Delegation'}
+        </span>
+        <button
+          onClick={() => setIsOpen(true)}
+          aria-label="Edit Delegation"
+          className="p-1.5 rounded-full 
+                    border border-[var(--color-border)] 
+                    bg-[var(--color-white)] shadow-sm 
+                    text-[var(--color-secondary)] 
+                    hover:text-[var(--color-secondary-hover)] 
+                    hover:bg-[var(--color-light-gray)] transition"
+        >
+          <Pencil size={16} />
+        </button>
+      </div>
 
-        <div className="border-t border-white my-3" />
+      {isOpen && (
+        <TrainerSelectModal
+          allTrainers={allTrainers}
+          selected={allTrainers.find(t => t.name === selected)}
+          onSelect={async (trainer) => {
+            setSelected(trainer.name);
 
-        <div className="space-y-3 mb-3">
+            try {
+              const token = localStorage.getItem('token');
+              await axios.post(
+                `${API_BASE_URL}/api/updateProfile/${trainerId}`,
+                { delegation_id: trainer.id },
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              toast.success(`Delegation updated to ${trainer.name}`);
+            } catch (error) {
+              console.error("Error updating delegation:", error);
+              toast.error("Failed to update delegation");
+            }
+          }}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Categories */}
+      {/* Categories */}
+      <div className="space-y-3">
+        <AnimatePresence>
           {categories.map((cat, index) => (
-            <div
-              key={cat.name}
+            <motion.div
+              key={cat.id}
+              layoutId={`cat-${cat.id}`}  // ← هنا
               draggable
-              onDragStart={(e) => handleDragStart(e, cat)}
+              onDragStart={(e) =>
+                e.dataTransfer.setData('categoryIds', JSON.stringify([cat.id]))
+              }
               className="cursor-pointer"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ duration: 0.3 }}
             >
               <CategoryItem
                 name={cat.name}
+                ownerName={cat.ownerName}
                 description={cat.description}
                 colorClass={colorCycle[index % colorCycle.length]}
               />
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

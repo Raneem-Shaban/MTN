@@ -47,7 +47,7 @@ const Evaluations = () => {
   };
 
   return (
-    <div className="px-6 pt-6 overflow-hidden">
+    <div className="px-6 py-20 overflow-hidden">
       <h1 className="text-2xl font-bold text-[var(--color-text-main)] mb-4">
         Evaluations
       </h1>

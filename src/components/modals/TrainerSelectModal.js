@@ -29,14 +29,14 @@ const TrainerSelectModal = ({ allTrainers, selected, onSelect, onClose }) => {
               <li
                 key={trainer.id}
                 onClick={() => {
-                  onSelect(trainer.name);
+                  onSelect(trainer); // ⚡ الآن نرسل الكائن كامل
                   onClose();
                 }}
-                className={`px-4 py-2 rounded-md cursor-pointer border flex justify-between items-center hover:bg-[var(--color-hover)] transition ${selected === trainer.name ? 'bg-[var(--color-hover)] font-semibold' : ''
+                className={`px-4 py-2 rounded-md cursor-pointer border flex justify-between items-center hover:bg-[var(--color-hover)] transition ${selected?.id === trainer.id ? 'bg-[var(--color-hover)] font-semibold' : ''
                   }`}
               >
                 <span>{trainer.name}</span>
-                {selected === trainer.name && (
+                {selected?.id === trainer.id && (
                   <svg
                     className="w-4 h-4 text-green-500"
                     fill="none"

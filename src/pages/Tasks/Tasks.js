@@ -5,7 +5,7 @@ const Tasks = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <main className="relative min-h-screen p-5">
+    <main className="relative min-h-screen p-5 py-20">
       <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--color-text-main)' }}>
         Tasks
       </h1>

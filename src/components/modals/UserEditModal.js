@@ -3,7 +3,7 @@ import { IoClose } from 'react-icons/io5';
 import { Pencil } from 'lucide-react';
 import Input from '../common/inputs/Input';
 import Select from '../common/inputs/Select';
-import { FiChevronDown } from 'react-icons/fi';
+import { FiChevronDown, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../../constants/constants';
@@ -11,6 +11,8 @@ import axios from 'axios';
 
 const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
   const token = useSelector((state) => state.auth.user.token);
+  const currentUser = useSelector((state) => state.auth.user);
+
 
   const [form, setForm] = useState({
     name: '',
@@ -29,6 +31,10 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
   const [loadingRoles, setLoadingRoles] = useState(false);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // لإظهار/إخفاء كلمة المرور
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // تحديث form عند تغيير المستخدم المحدد
   useEffect(() => {
@@ -112,10 +118,17 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
   };
 
   const handleSubmit = () => {
-    const cleanedForm = cleanObject(form);
-    onSubmit(form);
+    let cleanedForm = cleanObject(form);
+
+    if (cleanedForm.role_id === 1) {
+      toast.error('You cannot assign this role');
+      return;
+    }
+
+    onSubmit(cleanedForm);
     onClose();
   };
+
 
   if (!isOpen) return null;
 
@@ -149,19 +162,39 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
             onChange={(e) => handleChange('email', e.target.value)}
           />
 
-          <Input
-            label="Password"
-            type="password"
-            value={form.password}
-            onChange={(e) => handleChange('password', e.target.value)}
-          />
+          {/* Password مع أيقونة Eye */}
+          <div className="relative">
+            <Input
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              value={form.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-10 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              {showPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
+          </div>
 
-          <Input
-            label="Confirm Password"
-            type="password"
-            value={form.password_confirmation}
-            onChange={(e) => handleChange('password_confirmation', e.target.value)}
-          />
+          {/* Confirm Password مع أيقونة Eye */}
+          <div className="relative">
+            <Input
+              label="Confirm Password"
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={form.password_confirmation}
+              onChange={(e) => handleChange('password_confirmation', e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute right-3 top-10 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+            >
+              {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
+          </div>
 
           <Input
             label="Position"
@@ -169,18 +202,29 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
             onChange={(e) => handleChange('position', e.target.value)}
           />
 
-          <div className="relative">
-            <Select
-              label="Role"
-              options={roles.map((role) => role.name)}
-              value={roles.find(r => r.id === form.role_id)?.name || ''}
-              onChange={(value) => {
-                const selectedRole = roles.find(r => r.name === value);
-                handleChange('role_id', selectedRole?.id || '');
-              }}
-            />
-            <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
-          </div>
+          <Select
+            label="Role"
+            options={roles
+              .filter((roleOption) => {
+                // تمنع أي شخص من اختيار role_id = 1
+                if (roleOption.id === 1) return false;
+
+                // شرطك الحالي: إذا كان المستخدم الحالي Admin (2) والمستخدم المعروض Trainer (3)
+                if (currentUser.role_id === 2 && user?.role_id === 3) {
+                  return roleOption.id !== 2; // 1 تم استبعادها بالفعل، 2 لا يمكن لـ Admin أن يعطيها لـ Trainer
+                }
+
+                return true;
+              })
+              .map((role) => role.name)
+            }
+            value={roles.find(r => r.id === form.role_id)?.name || ''}
+            onChange={(value) => {
+              const selectedRole = roles.find(r => r.name === value);
+              handleChange('role_id', selectedRole?.id || '');
+            }}
+          />
+
 
           {form.role_id === 3 && (
             <div className="relative">

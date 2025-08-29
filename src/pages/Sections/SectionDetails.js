@@ -55,11 +55,17 @@ const SectionDetails = () => {
   }, [id]);
 
   if (loading) {
-    return <LoadingSpinner />; // عرض مؤشر التحميل أثناء الانتظار
+    return (
+      <div className="flex flex-col h-[calc(100vh-120px)] relative">
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="loader"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto py-20">
       {/* Section Info */}
       <div
         className="shadow-lg rounded-3xl p-8 mb-8 border border-[var(--color-border)]"

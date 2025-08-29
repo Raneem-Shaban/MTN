@@ -46,7 +46,7 @@ const Sidebar = () => {
   }, [dispatch, navigate, token]);
 
   return (
-    <div className="h-full bg-[var(--color-bg)] border-r border-[var(--color-border)] w-16 sm:w-64 py-8 shadow-xl transition-all">
+<div className="h-full bg-[var(--color-bg)] border-r border-[var(--color-border)] w-16 sm:w-64 py-10 shadow-xl transition-all relative z-50 mt-[64px]">
       <nav className="space-y-2">
         {filteredNavItems.map((item, idx) =>
           item.isLogout ? (

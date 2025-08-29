@@ -19,26 +19,9 @@ import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationM
 import { useNavigate } from 'react-router-dom';
 
 
-const dummyInquiries = [
-  { id: 1, question: 'How to submit reports?', answer: 'Use the reporting tool in your dashboard.', rating: 4, status: 'Open' },
-  { id: 2, question: 'What is the design guideline?', answer: 'Check the design system documentation.', rating: 3, status: 'Closed' },
-];
-
-const dummyUsers = [
-  { id: 1, name: 'Alice' },
-  { id: 2, name: 'John' },
-  { id: 3, name: 'Sara' },
-];
-
 const Sections = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedSection, setSelectedSection] = useState(null);
   const [filterTab, setFilterTab] = useState('Sections');
-  const [detailTab, setDetailTab] = useState('Inquiries');
-  const [inquiryRatings, setInquiryRatings] = useState(
-    Object.fromEntries(dummyInquiries.map((inq) => [inq.id, inq.rating]))
-  );
-  const [expandedAnswers, setExpandedAnswers] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [trashedSections, setTrashedSections] = useState([]);
@@ -105,41 +88,41 @@ const Sections = () => {
     fetchSections();
   }, []);
 
- const confirmDeleteSection = async () => {
-  if (!selectedSectionId) return;
-  const token = localStorage.getItem('token');
-  if (!token) {
-    toast.error('Authentication token not found. Please log in again.');
-    return;
-  }
-
-  try {
-    await axios.delete(`${API_BASE_URL}/api/sections/${selectedSectionId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    // 🔹 اجلب القسم المحذوف
-    const deletedSection = sections.find((sec) => sec.id === selectedSectionId);
-
-    // 🔹 احذفه من القائمة الرئيسية
-    dispatch(removeSection(selectedSectionId));
-
-    // 🔹 ضيفه على قائمة trashed
-    if (deletedSection) {
-      setTrashedSections((prev) => [...prev, deletedSection]);
+  const confirmDeleteSection = async () => {
+    if (!selectedSectionId) return;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error('Authentication token not found. Please log in again.');
+      return;
     }
 
-    toast.success('Section moved to trash');
-  } catch (error) {
-    console.error('Error deleting section:', error);
-    toast.error('Failed to delete section');
-  } finally {
-    setShowDeleteModal(false);
-    setSelectedSectionId(null);
-  }
-};
+    try {
+      await axios.delete(`${API_BASE_URL}/api/sections/${selectedSectionId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // 🔹 اجلب القسم المحذوف
+      const deletedSection = sections.find((sec) => sec.id === selectedSectionId);
+
+      // 🔹 احذفه من القائمة الرئيسية
+      dispatch(removeSection(selectedSectionId));
+
+      // 🔹 ضيفه على قائمة trashed
+      if (deletedSection) {
+        setTrashedSections((prev) => [...prev, deletedSection]);
+      }
+
+      toast.success('Section moved to trash');
+    } catch (error) {
+      console.error('Error deleting section:', error);
+      toast.error('Failed to delete section');
+    } finally {
+      setShowDeleteModal(false);
+      setSelectedSectionId(null);
+    }
+  };
 
 
   const cancelDelete = () => {
@@ -230,6 +213,7 @@ const Sections = () => {
 
       toast.success('Section updated successfully!');
     } catch (error) {
+      console.error("Error updating section:", error.response || error);
       console.error('Error updating section:', error);
       toast.error('Failed to update section');
     } finally {
@@ -348,9 +332,9 @@ const Sections = () => {
 
 
   return (
-    <div className="px-6 pt-6" dir="ltr">
+    <div className="px-6 py-20" dir="ltr">
       <h1 className="text-2xl font-bold text-[var(--color-text-main)] mb-4">
-        Sections Overview
+        Sections
       </h1>
 
       <FilterTabs
@@ -383,7 +367,7 @@ const Sections = () => {
       </div>
 
       <FloatingActionButton
-        onClick={() => console.log("open modal")}
+        onClick={() => setIsModalOpen(true)}
         label="Add Section"
       />
 

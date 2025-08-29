@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { FiEye, FiEyeOff, FiChevronDown } from 'react-icons/fi';
 import { API_BASE_URL } from '../../constants/constants';
 
-const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
+const UserFormModal = ({ isOpen, onClose, onSubmit }) => {
   const token = useSelector((state) => state.auth.user.token);
   const [form, setForm] = useState({
     name: '',
@@ -18,6 +18,7 @@ const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
     password_confirmation: '',
     role: '',
     section: '',
+    position: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -25,11 +26,12 @@ const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [roles, setRoles] = useState([]);
+  const [sections, setSections] = useState([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
+  const [loadingSections, setLoadingSections] = useState(false);
+
   const selectedRole = roles.find((r) => r.name === form.role);
   const role_id = selectedRole ? selectedRole.id : null;
-  const [sections, setSections] = useState([]);
-  const [loadingSections, setLoadingSections] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -38,13 +40,10 @@ const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
       setLoadingRoles(true);
       try {
         const res = await axios.get(`${API_BASE_URL}/api/roles`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-        );
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setRoles(res.data);
-      } catch (err) {
+      } catch {
         toast.error('Failed to load roles');
       } finally {
         setLoadingRoles(false);
@@ -53,17 +52,12 @@ const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
 
     const fetchSections = async () => {
       setLoadingSections(true);
-
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/sections`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await axios.get(`${API_BASE_URL}/api/sections`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setSections(res.data);
-      } catch (err) {
+      } catch {
         toast.error('Failed to load sections');
       } finally {
         setLoadingSections(false);
@@ -75,87 +69,74 @@ const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
   }, [isOpen, token]);
 
   const validateField = (field, value) => {
-    if (!value) {
-      return 'Required';
-    }
-    if (field === 'password_confirmation' && value !== form.password) {
+    if (!value) return 'Required';
+    if (field === 'password_confirmation' && value !== form.password)
       return 'Passwords do not match';
-    }
     return '';
   };
 
   const handleChange = (field, value) => {
     setForm({ ...form, [field]: value });
-
     if (touched[field]) {
-      const error = validateField(field, value);
-      setErrors((prev) => ({ ...prev, [field]: error }));
+      setErrors({ ...errors, [field]: validateField(field, value) });
     }
-
     if (field === 'password' && touched.password_confirmation) {
-      const error = validateField('password_confirmation', form.password_confirmation);
-      setErrors((prev) => ({ ...prev, password_confirmation: error }));
+      setErrors({
+        ...errors,
+        password_confirmation: validateField(
+          'password_confirmation',
+          form.password_confirmation
+        ),
+      });
     }
   };
 
   const handleBlur = (field) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    const error = validateField(field, form[field]);
-    setErrors((prev) => ({ ...prev, [field]: error }));
+    setTouched({ ...touched, [field]: true });
+    setErrors({ ...errors, [field]: validateField(field, form[field]) });
   };
 
-  const getSectionId = (sectionName) => {
-    const map = {
-      Training: 1,
-      Support: 2,
-      Sales: 3,
-    };
-    return map[sectionName] || 1;
+  const getSectionId = (sectionLabel) => {
+    const sectionObj = sections.find(
+      (s) => `${s.name} (${s.division})` === sectionLabel
+    );
+    return sectionObj ? sectionObj.id : null;
   };
+
 
   const handleSubmit = async () => {
     const newErrors = {};
     const newTouched = {};
-
     for (const field in form) {
       newErrors[field] = validateField(field, form[field]);
       newTouched[field] = true;
     }
-
     setErrors(newErrors);
     setTouched(newTouched);
 
     if (Object.values(newErrors).every((e) => !e)) {
-    try {
-      const res = await axios.post(
-        `${API_BASE_URL}/api/add_user`,
-        {
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          password_confirmation: form.password_confirmation,
-          role_id,
-          section_id: getSectionId(form.section),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      try {
+        const res = await axios.post(
+          `${API_BASE_URL}/api/add_user`,
+          {
+            name: form.name,
+            email: form.email,
+            password: form.password,
+            password_confirmation: form.password_confirmation,
+            role_id,
+            section_id: getSectionId(form.section),
+            position: form.position,
           },
-        }
-      );
-
-      toast.success('User added successfully!');
-      console.log("New user response:", res.data);
-      onSubmit && onSubmit(res.data.user); // ⚡ أرسل المستخدم الجديد للـ parent
-      onClose();
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error.response?.data?.message || 'Failed to add user.'
-      );
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success('User added successfully!');
+        onSubmit && onSubmit(res.data.user);
+        onClose();
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to add user.');
+      }
     }
-  }
-};
+  };
 
   if (!isOpen) return null;
 
@@ -190,6 +171,8 @@ const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
             onBlur={() => handleBlur('email')}
             error={touched.email && errors.email}
           />
+
+          {/* Password Field */}
           <div className="relative">
             <Input
               label="Password"
@@ -208,12 +191,15 @@ const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
             </button>
           </div>
 
+          {/* Confirm Password Field */}
           <div className="relative">
             <Input
               label="Confirm Password"
               type={showConfirmPassword ? 'text' : 'password'}
               value={form.password_confirmation}
-              onChange={(e) => handleChange('password_confirmation', e.target.value)}
+              onChange={(e) =>
+                handleChange('password_confirmation', e.target.value)
+              }
               onBlur={() => handleBlur('password_confirmation')}
               error={touched.password_confirmation && errors.password_confirmation}
             />
@@ -226,18 +212,28 @@ const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
             </button>
           </div>
 
+          <Input
+            label="Position"
+            value={form.position}
+            onChange={(e) => handleChange('position', e.target.value)}
+            onBlur={() => handleBlur('position')}
+            error={touched.position && errors.position}
+          />
+
+
+          {/* Role & Section */}
           <div className="relative">
             <Select
               label="Role"
-              options={roles.map((role) => role.name)}
+              options={roles.filter((r) => r.id !== 1).map((r) => r.name)}
               value={form.role}
               onChange={(value) => handleChange('role', value)}
               onBlur={() => handleBlur('role')}
               error={touched.role && errors.role}
             />
-
             <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
           </div>
+
           <div className="relative">
             <Select
               label="Section"
@@ -250,6 +246,8 @@ const UserFormModal = ({ isOpen, onClose,onSubmit  }) => {
             <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
           </div>
         </div>
+
+
 
         <div className="px-6 py-4 mt-auto border-t bg-[var(--color-bg)] rounded-b-lg">
           <div className="flex flex-col sm:flex-row justify-between gap-3">
