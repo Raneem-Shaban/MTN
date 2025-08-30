@@ -68,7 +68,7 @@ const UserAddInquiry = () => {
   const isSubmitDisabled = !title || !body || !category || loading;
 
   return (
-    <div className="px-6 md:px-10">
+    <div className="px-6 pt-20 md:px-10">
       <div className="max-w-2xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3 rtl:flex-row-reverse">

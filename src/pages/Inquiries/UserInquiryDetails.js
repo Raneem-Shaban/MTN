@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FiPaperclip, FiX } from "react-icons/fi";
+import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -17,9 +18,15 @@ const UserInquiryDetails = () => {
   const [loading, setLoading] = useState(true);
   const [attachments, setAttachments] = useState([]);
 
-
   const [followUps, setFollowUps] = useState([]);
   const [followUpsLoading, setFollowUpsLoading] = useState(true);
+
+  // rating states
+  const [submittingRating, setSubmittingRating] = useState(false);
+  const [ratingScore, setRatingScore] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [ratingFeedback, setRatingFeedback] = useState('');
+  const [showRatingForm, setShowRatingForm] = useState(false);
 
   // current user from redux (ensure your slice name is "auth")
   const reduxUser = useSelector((state) => state.auth?.user ?? null);
@@ -47,7 +54,7 @@ const UserInquiryDetails = () => {
   // --------------------------
   const getAuthToken = useCallback(() => {
     // prefer token in redux user, fallback to localStorage
-    return (reduxUser && reduxUser.token) ? reduxUser.token : localStorage.getItem('token');
+    return (reduxUser && (reduxUser.token || reduxUser.accessToken)) ? (reduxUser.token || reduxUser.accessToken) : localStorage.getItem('token');
   }, [reduxUser]);
 
   // --------------------------
@@ -62,8 +69,6 @@ const UserInquiryDetails = () => {
         headers: { Authorization: token ? `Bearer ${token}` : undefined },
       });
 
-      console.log('✅ Followups response:', resp.data);
-
       const data = resp.data;
       if (Array.isArray(data)) {
         setFollowUps(data);
@@ -71,10 +76,9 @@ const UserInquiryDetails = () => {
         setFollowUps(data.data);
       } else {
         setFollowUps([]);
-        console.warn('⚠️ Unexpected followups shape, set as empty array.');
       }
     } catch (err) {
-      console.error('❌ Error fetching followups:', err);
+      console.error('Error fetching followups:', err);
       setFollowUps([]);
     } finally {
       setFollowUpsLoading(false);
@@ -92,31 +96,13 @@ const UserInquiryDetails = () => {
 
       const data = response.data || null;
       setInquiryData(data);
-      console.log('✅ Inquiry data fetched:', data);
-
-      // Immediately debug author/status using the freshly fetched data
-      console.log('🔍 After fetch -> reduxUser (current):', reduxUser);
-      // Evaluate author/status passing `data` explicitly (safer)
-      const authorCheck = isAuthor(data);
-      const closedCheck = isStatusClosed(data);
-      console.log('🔍 After fetch -> isAuthor:', authorCheck, 'isStatusClosed:', closedCheck);
-
-      // If authorCheck false and fields missing -> print full shapes
-      if (!authorCheck) {
-        const inquiryUserId = data?.user?.id ?? data?.user_id ?? null;
-        const inquiryUserEmail = data?.user?.email ?? data?.user_email ?? null;
-        if (inquiryUserId == null && !inquiryUserEmail) {
-          console.warn('⚠️ inquiry user fields missing. inquiryData object shape:', data);
-          console.warn('⚠️ reduxUser shape:', reduxUser);
-        }
-      }
     } catch (error) {
-      console.error('❌ Error fetching inquiry details:', error);
+      console.error('Error fetching inquiry details:', error);
       setInquiryData(null);
     } finally {
       setLoading(false);
     }
-  }, [id, getAuthToken, reduxUser]);
+  }, [id, getAuthToken]);
 
   // --------------------------
   // helpers that use reduxUser
@@ -125,7 +111,6 @@ const UserInquiryDetails = () => {
     const data = dataParam ?? inquiryData;
     const name = data?.status?.name ?? data?.status_name ?? null;
     const closed = !!name && String(name).toLowerCase() === 'closed';
-    console.log('🔁 isStatusClosed ->', { name, closed });
     return closed;
   };
 
@@ -133,37 +118,23 @@ const UserInquiryDetails = () => {
     const data = dataParam ?? inquiryData;
     const cu = reduxUser;
 
-    if (!cu) {
-      console.log('🔁 isAuthor -> no reduxUser (null)');
-      return false;
-    }
+    if (!cu) return false;
 
-    // check possible shapes
     const inquiryUserId = data?.user?.id ?? data?.user_id ?? data?.userId ?? null;
-
-    console.log('🔁 isAuthor -> reduxUser.id:', cu.id, 'inquiryUserId:', inquiryUserId);
-
     if (inquiryUserId != null && cu.id != null) {
-      const same = String(inquiryUserId) === String(cu.id);
-      console.log('🔁 isAuthor by id ->', same);
-      return same;
+      return String(inquiryUserId) === String(cu.id);
     }
-
-    console.log('🔁 isAuthor -> could not determine author (missing fields)');
     return false;
   };
 
   // --------------------------
   // Effects (always declared before any return)
   // --------------------------
-  useEffect(() => {
-    console.log('🔁 reduxUser (from store) updated:', reduxUser);
-  }, [reduxUser]);
+  useEffect(() => { }, [reduxUser]);
 
   useEffect(() => {
     let mounted = true;
     const init = async () => {
-      console.log('▶️ init: fetching inquiry & followups (reduxUser present?)', !!reduxUser);
       await Promise.all([fetchInquiryData(), fetchFollowUps()]);
       if (!mounted) return;
     };
@@ -171,15 +142,108 @@ const UserInquiryDetails = () => {
     return () => { mounted = false; };
   }, [fetchInquiryData, fetchFollowUps, reduxUser]);
 
-  useEffect(() => {
-    console.log('🔁 followUps state updated:', followUps);
-  }, [followUps]);
+  // --------------------------
+  // Ratings helpers
+  // --------------------------
+  const getRatingsArray = () => {
+    if (!inquiryData) return [];
+    const r = inquiryData.ratings ?? inquiryData.rating ?? inquiryData.rates ?? [];
+    return Array.isArray(r) ? r : [];
+  };
 
-  useEffect(() => {
-    const canShow = isAuthor() && isStatusClosed();
-    console.log('🔔 canShowReopenButton:', canShow, 'isAuthor:', isAuthor(), 'isStatusClosed:', isStatusClosed());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduxUser, inquiryData, followUps, loading]);
+  const ratings = getRatingsArray();
+  const ratingCount = ratings.length;
+  const avgRating = ratingCount > 0
+    ? Math.round((ratings.reduce((sum, it) => sum + (Number(it.score) || 0), 0) / ratingCount) * 10) / 10
+    : null;
+
+  const hasCurrentUserRated = () => {
+    if (!reduxUser) return false;
+    const uid = reduxUser.id ?? reduxUser.user_id ?? null;
+    if (!uid) return false;
+    return ratings.some(r => String(r.user_id ?? r.user?.id ?? r.reviewer_id ?? '') === String(uid));
+  };
+
+  const canUserRate = () => {
+    // only the inquiry author can add a rating
+    return isAuthor() && !hasCurrentUserRated();
+  };
+
+  const renderStaticStars = (value, max = 5) => {
+    const filled = Math.round(value || 0);
+    const stars = [];
+    for (let i = 1; i <= max; i++) {
+      stars.push(i <= filled ? <AiFillStar key={i} className="inline-block mr-0.5 text-yellow-500" /> : <AiOutlineStar key={i} className="inline-block mr-0.5 text-yellow-500" />);
+    }
+    return <div className="inline-flex items-center">{stars}</div>;
+  };
+
+  const renderInteractiveStars = (max = 5) => {
+    const stars = [];
+    for (let i = 1; i <= max; i++) {
+      const filled = i <= (hoverRating || ratingScore);
+      stars.push(
+        <button
+          key={i}
+          type="button"
+          className={`p-1 rounded ${filled ? 'transform scale-105' : 'hover:scale-105'}`}
+          onMouseEnter={() => setHoverRating(i)}
+          onMouseLeave={() => setHoverRating(0)}
+          onFocus={() => setHoverRating(i)}
+          onBlur={() => setHoverRating(0)}
+          onClick={() => setRatingScore(i)}
+          aria-label={`Rate ${i} star`}
+        >
+          {filled ? <AiFillStar className="text-yellow-500 text-2xl" /> : <AiOutlineStar className="text-yellow-500 text-2xl" />}
+        </button>
+      );
+    }
+    return <div className="inline-flex items-center gap-1">{stars}</div>;
+  };
+
+  const submitRating = async () => {
+    if (!ratingScore || ratingScore < 1 || ratingScore > 5) {
+      setToast({ show: true, type: 'error', message: 'Please choose a rating between 1 and 5.' });
+      setTimeout(() => setToast({ show: false, type: 'info', message: '' }), 4500);
+      return;
+    }
+
+    setSubmittingRating(true);
+    const token = getAuthToken();
+
+    try {
+      const payload = {
+        inquiry_id: Number(id),
+        score: Number(ratingScore),
+        feedback_text: ratingFeedback || '',
+      };
+
+      const resp = await axios.post(`${API_BASE_URL}/api/ratings`, payload, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      setToast({ show: true, type: 'success', message: resp.data?.message || 'The rating has been sent successfully.' });
+      setTimeout(() => setToast({ show: false, type: 'info', message: '' }), 4500);
+
+      // refresh inquiry data to get updated avg
+      await fetchInquiryData();
+
+      // hide form after success
+      setShowRatingForm(false);
+      setRatingScore(0);
+      setRatingFeedback('');
+    } catch (err) {
+      console.error('Error submitting rating:', err);
+      const msg = err?.response?.data?.message || 'Failed to submit rating.';
+      setToast({ show: true, type: 'error', message: msg });
+      setTimeout(() => setToast({ show: false, type: 'info', message: '' }), 4500);
+    } finally {
+      setSubmittingRating(false);
+    }
+  };
 
   // --------------------------
   // Reopen modal handlers & submit
@@ -195,14 +259,10 @@ const UserInquiryDetails = () => {
     setReopenOpen(false);
   };
 
-  const showToast = ({ type = 'info', message = '' }) => {
-    setToast({ show: true, type, message });
-    setTimeout(() => setToast({ show: false, type: 'info', message: '' }), 4500);
-  };
-
   const submitReopen = async () => {
     if (!reopenText.trim() && reopenFiles.length === 0) {
-      showToast({ type: 'error', message: 'Please add a message or attach a file to reopen.' });
+      setToast({ show: true, type: 'error', message: 'Please add a message or attach a file to reopen.' });
+      setTimeout(() => setToast({ show: false, type: 'info', message: '' }), 4500);
       return;
     }
 
@@ -214,7 +274,7 @@ const UserInquiryDetails = () => {
       formData.append('inquiry_id', id);
       formData.append('response', reopenText);
       reopenFiles.forEach((f) => {
-      formData.append('attachments[]', f, f.name);
+        formData.append('attachments[]', f, f.name);
       });
       formData.append('status', '4');
 
@@ -229,17 +289,17 @@ const UserInquiryDetails = () => {
         }
       );
 
-      console.log('✅ Reopen response:', resp.data);
-
-      showToast({ type: 'success', message: resp.data?.message || 'Inquiry reopened successfully.' });
+      setToast({ show: true, type: 'success', message: resp.data?.message || 'Inquiry reopened successfully.' });
+      setTimeout(() => setToast({ show: false, type: 'info', message: '' }), 4500);
 
       await Promise.all([fetchInquiryData(), fetchFollowUps()]);
 
       setReopenOpen(false);
     } catch (err) {
-      console.error('❌ Error reopening inquiry:', err);
+      console.error('Error reopening inquiry:', err);
       const msg = err?.response?.data?.message || 'Failed to reopen inquiry.';
-      showToast({ type: 'error', message: msg });
+      setToast({ show: true, type: 'error', message: msg });
+      setTimeout(() => setToast({ show: false, type: 'info', message: '' }), 4500);
     } finally {
       setSubmittingReopen(false);
     }
@@ -254,13 +314,13 @@ const UserInquiryDetails = () => {
   // Render
   // --------------------------
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 pt-20 space-y-4">
       {loading ? (
         <div>Loading data...</div>
       ) : (
         <>
           <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-main)' }}>
-            Inquiry:
+            #{inquiryData?.id} Inquiry:
           </h2>
 
           {inquiryData ? (
@@ -280,6 +340,67 @@ const UserInquiryDetails = () => {
           ) : (
             <div>Failed to fetch inquiry details.</div>
           )}
+
+          {/* Modern avg rating card + inline form */}
+          <div className="mt-4 bg-white rounded-lg shadow-lg p-4 max-w">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* Avg visual */}
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-inner">
+                  <div className="text-center">
+                    <div className="text-xl font-bold text-white">{avgRating ?? '-'}</div>
+                    <div className="text-xs text-white/90">Avg</div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-500">Overall rating</div>
+                  <div className="flex items-center gap-3 mt-1">
+                    {renderStaticStars(avgRating || 0)}
+                    <div className="text-sm text-gray-500">{ratingCount} review{ratingCount > 1 ? 's' : ''}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Inline rating form area (appears only for author who hasn't rated) */}
+              <div className="ml-auto w-full sm:w-auto">
+                {canUserRate() ? (
+                  <div className="mt-3 sm:mt-0">
+                    {!showRatingForm ? (
+                      <button onClick={() => setShowRatingForm(true)} className="px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow hover:brightness-105 transition">Add your rating</button>
+                    ) : (
+                      <div className="mt-2 bg-gray-50 p-4 rounded-md border">
+                        <div className="mb-2 font-medium">How was the response?</div>
+                        <div className="mb-3">{renderInteractiveStars(5)}</div>
+
+                        <textarea
+                          value={ratingFeedback}
+                          onChange={(e) => setRatingFeedback(e.target.value)}
+                          placeholder="Optional feedback (helps us improve)"
+                          className="w-full p-3 border rounded-md mb-3 resize-none"
+                          rows={3}
+                        />
+
+                        <div className="flex items-center gap-2 justify-end">
+                          <button onClick={() => { setShowRatingForm(false); setRatingScore(0); setRatingFeedback(''); }} className="px-3 py-1 border rounded-md">Cancel</button>
+                          <button onClick={submitRating} disabled={submittingRating} className={`px-4 py-2 rounded-md text-white ${submittingRating ? 'bg-gray-400' : 'bg-[var(--color-secondary)]'}`}>
+                            {submittingRating ? 'Sending...' : 'Send Rating'}
+                          </button>
+                        </div>
+
+                        <div className="text-xs text-gray-400 mt-2">You can rate once. Your feedback is visible.</div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // if user is not allowed, show small hint if they already rated or not author
+                  isAuthor() ? (
+                    <div className="text-sm text-gray-500">You have already rated this inquiry.</div>
+                  ) : null
+                )}
+              </div>
+            </div>
+          </div>
 
           <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-main)' }}>Answer:</h2>
 
@@ -432,8 +553,7 @@ const UserInquiryDetails = () => {
 
           {toast.show && (
             <div
-              className={`fixed right-4 top-6 z-60 px-4 py-2 rounded shadow-lg ${toast.type === 'success' ? 'bg-green-600 text-white' : toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-gray-800 text-white'
-                }`}
+              className={`fixed right-4 top-6 z-60 px-4 py-2 rounded shadow-lg ${toast.type === 'success' ? 'bg-green-600 text-white' : toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-gray-800 text-white'}`}
             >
               {toast.message}
             </div>

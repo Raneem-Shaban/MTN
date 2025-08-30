@@ -182,7 +182,7 @@ const Favorite = () => {
   ];
 
   return (
-    <div className="px-6 pt-6 overflow-hidden" dir="ltr">
+    <div className="px-6 pt-20 overflow-hidden" dir="ltr">
       <h1 className="text-2xl font-bold text-[var(--color-text-main)] mb-4">Favorite Inquiries</h1>
 
       <FilterTabs

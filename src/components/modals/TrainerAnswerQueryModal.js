@@ -209,7 +209,7 @@ export default function TrainerAnswerQueryModal({ inquiry, onSubmit, onAction, o
   const followupDisabled = submittingFollowup || !selectedSectionId || isClosed();
 
   return (
-    <div className="bg-[var(--color-bg)] p-6 rounded-lg w-full max-w-3xl shadow-lg max-h-[85vh] overflow-auto">
+    <div className="bg-[var(--color-bg)] p-6 rounded-lg w-full max-w-3xl shadow-lg max-h-[75vh] overflow-auto">
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-xl font-bold" style={{ color: 'var(--color-text-main)' }}>

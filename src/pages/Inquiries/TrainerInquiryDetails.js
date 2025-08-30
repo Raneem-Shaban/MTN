@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FiPaperclip, FiX } from 'react-icons/fi';
+import { FiPaperclip, FiX, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { AiFillStar, AiOutlineStar } from 'react-icons/ai';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -31,6 +32,9 @@ const TrainerInquiryDetails = () => {
   const [followupFiles, setFollowupFiles] = useState([]);
   const [submittingFollowup, setSubmittingFollowup] = useState(false);
 
+  // ratings collapse state
+  const [ratingsExpanded, setRatingsExpanded] = useState(false); // collapsed by default
+
   // toast
   const [toast, setToast] = useState({ show: false, type: 'info', message: '' });
 
@@ -56,7 +60,6 @@ const TrainerInquiryDetails = () => {
 
   // هل الاستفسار مغلق؟
   const isClosed = () => {
-    // check by name or by status id (many APIs use id=3 for closed)
     const name = inquiryData?.status?.name ?? inquiryData?.status_name ?? '';
     const idStatus = inquiryData?.status?.id ?? inquiryData?.status_id ?? inquiryData?.cur_status_id ?? null;
     const closedByName = typeof name === 'string' && name.trim().toLowerCase() === 'closed';
@@ -187,6 +190,30 @@ const TrainerInquiryDetails = () => {
     console.log('[debug] followupFiles:', followupFiles.map(f => f.name));
   }, [followupFiles]);
 
+  // Rating helpers
+  const getRatings = () => {
+    if (!inquiryData) return [];
+    // normalise different payload shapes
+    const r = inquiryData.ratings ?? inquiryData.rating ?? inquiryData.rates ?? [];
+    return Array.isArray(r) ? r : [];
+  };
+
+  const ratings = getRatings();
+  const ratingCount = ratings.length;
+  const avgRating = ratingCount > 0
+    ? Math.round((ratings.reduce((sum, it) => sum + (Number(it.score) || 0), 0) / ratingCount) * 10) / 10
+    : null; // 1 decimal
+
+  const renderStars = (value, max = 5) => {
+    const filled = Math.round(value || 0);
+    const stars = [];
+    for (let i = 1; i <= max; i++) {
+      if (i <= filled) stars.push(<AiFillStar key={i} className="inline-block mr-0.5" />);
+      else stars.push(<AiOutlineStar key={i} className="inline-block mr-0.5" />);
+    }
+    return <span className="inline-flex items-center text-yellow-500">{stars}</span>;
+  };
+
   // Reply attachments handlers
   const handleReplyFilesChange = (e) => {
     const files = Array.from(e.target.files || []);
@@ -292,7 +319,6 @@ const TrainerInquiryDetails = () => {
     try {
       const token = getAuthToken();
 
-      // always send FormData for consistency
       const form = new FormData();
       form.append('inquiry_id', id);
       form.append('status', 2); // default: pending
@@ -327,14 +353,13 @@ const TrainerInquiryDetails = () => {
     }
   };
 
-
   // small helpers for UI
   const canSendReply = hasReplyPermission();
   const replyDisabled = submittingReply || !canSendReply || isClosed();
   const followupDisabled = submittingFollowup || !selectedSectionId || isClosed() || !hasReplyPermission();
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-6 pt-20 space-y-6 max-w-5xl mx-auto">
       {loading ? (
         <div className="text-center py-12">Loading inquiry...</div>
       ) : (
@@ -361,6 +386,64 @@ const TrainerInquiryDetails = () => {
               />
             ) : (
               <div className="p-4 bg-white rounded shadow">Failed to load inquiry.</div>
+            )}
+
+            {/* Ratings compact block: show avg + toggle */}
+            {ratings && ratings.length > 0 && (
+              <div className="mt-4 bg-white rounded shadow-sm border">
+                <div className="p-4 flex items-center justify-between">
+                  <div>
+                    <div className="text-sm text-gray-500">Average rating</div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl font-semibold">{avgRating}</div>
+                      <div>{renderStars(avgRating || 0)}</div>
+                      <div className="text-sm text-gray-500">({ratingCount} review{ratingCount > 1 ? 's' : ''})</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      onClick={() => setRatingsExpanded((v) => !v)}
+                      aria-expanded={ratingsExpanded}
+                      className="inline-flex items-center gap-2 px-3 py-2 border rounded hover:bg-gray-50"
+                    >
+                      {ratingsExpanded ? (
+                        <>
+                          <FiChevronUp />
+                          <span className="text-sm">Hide reviews</span>
+                        </>
+                      ) : (
+                        <>
+                          <FiChevronDown />
+                          <span className="text-sm">Show reviews</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* collapsible content */}
+                <div className={`overflow-hidden transition-all duration-300 ${ratingsExpanded ? 'max-h-[2000px] p-4' : 'max-h-0 p-0'}`}>
+                  <div className="space-y-3">
+                    {ratings.map((r) => (
+                      <div key={r.id || `${r.user_id}-${r.score}-${Math.random()}`} className="p-3 bg-gray-50 rounded">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="font-medium">{r.user?.name || r.reviewer_name || `User #${r.user_id || r.userId || '??'}`}</div>
+                            <div className="text-sm text-gray-500">{formatDate(r.created_at || r.createdAt || r.date)}</div>
+                          </div>
+                          <div>{renderStars(r.score || 0)}</div>
+                        </div>
+
+                        {r.feedback_text && (
+                          <div className="mt-2 text-sm text-gray-700">{r.feedback_text}</div>
+                        )}
+
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
 
             <div>

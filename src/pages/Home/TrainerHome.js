@@ -295,7 +295,7 @@ export default function TrainerHome() {
       icon: FaHourglassHalf,
       iconColorVar: '--color-primary',
     },
-        {
+    {
       title: 'Closed Inquiries',
       count: stats.closed_inquiries,
       icon: FaQuestion,
@@ -316,7 +316,7 @@ export default function TrainerHome() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-6 pt-20">
       <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--color-text-main)' }}>Home</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
         {loadingStats
@@ -351,10 +351,19 @@ export default function TrainerHome() {
         </div>
       </DragDropContext>
 
+      {/* Modal overlay */}
       {modalInquiry && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center" onClick={handleModalCancel}>
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-[600px] relative" onClick={(e) => e.stopPropagation()}>
-            <AnswerModal inquiry={modalInquiry} onSubmit={handleModalSubmit} onCancel={handleModalCancel} />
+        <div
+          className="fixed inset-0 z-[9999] bg-black/50 flex justify-center items-center"
+          onClick={handleModalCancel}
+        >
+          {/* Stop clicks inside modal from closing */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <AnswerModal
+              inquiry={modalInquiry}
+              onSubmit={handleModalSubmit}
+              onCancel={handleModalCancel}
+            />
           </div>
         </div>
       )}

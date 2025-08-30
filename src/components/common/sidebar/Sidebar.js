@@ -19,11 +19,12 @@ const allNavItems = [
   { label: 'Sections', icon: <FaListAlt />, path: '/sections', roles: [1, 2] },
   { label: 'Categories', icon: <FaFolderOpen />, path: '/categories', roles: [1, 2] },
   { label: 'Evaluations', icon: <FaClipboardCheck />, path: '/evaluations', roles: [1, 2] },
-  { label: 'Tasks', icon: <FaTasks />, path: '/tasks', roles: [1, 2] },
+  { label: 'Tasks', icon: <FaTasks />, path: '/tasks', roles: [1, 2, 3] },
   { label: 'Favorite', icon: <FaStar />, path: '/favorite', roles: [5] },
   { label: 'My Inquiries', icon: <FaStar />, path: '/myInquiries', roles: [5] },
   { label: 'Logout', icon: <FaSignOutAlt />, path: '/#', roles: [1, 2, 3, 4, 5], isLogout: true },
 ];
+
 
 const Sidebar = () => {
   const dispatch = useDispatch();

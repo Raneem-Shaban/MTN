@@ -22,6 +22,8 @@ import InquiryDetailsWrapper from "../pages/InquiryDetailsWrapper/InquiryDetails
 import Profile from "../pages/Auth/Profile";
 import UserDetails from "../pages/Users/UserDetails";
 import GuestInquiries from "../pages/Guest/GuestInquiries";
+import UserMyInquiries from "../pages/Inquiries/UserMyInquiries";
+import TaskWrapper from "../pages/TaskWrapper/TaskWrapper";
 
 const routes = [
   {
@@ -32,12 +34,12 @@ const routes = [
   {
     path: '/',
     element: <HomeWrapper />,
-    roles: [1, 2, 3, 4, 5], 
+    roles: [1, 2, 3, 4, 5],
   },
   {
     path: '/profile',
-    element: <Profile/>,
-    roles: [1, 2, 3, 4, 5], 
+    element: <Profile />,
+    roles: [1, 2, 3, 4, 5],
   },
   {
     path: '/users',
@@ -46,7 +48,7 @@ const routes = [
   },
   {
     path: '/users/:userId',
-    element: <UserDetails/>,
+    element: <UserDetails />,
     roles: [1, 2],
   },
   {
@@ -56,7 +58,7 @@ const routes = [
   },
   {
     path: '/trainers/:id',
-    element: <TrainerDetails/>,
+    element: <TrainerDetails />,
     roles: [1, 2],
   },
   {
@@ -66,7 +68,7 @@ const routes = [
   },
   {
     path: '/sections/:id',
-    element: <SectionDetails/>,
+    element: <SectionDetails />,
     roles: [1, 2],
   },
   {
@@ -81,8 +83,8 @@ const routes = [
   },
   {
     path: '/tasks',
-    element: <Tasks />,
-    roles: [1, 2],
+    element: <TaskWrapper/>,
+    roles: [1, 2, 3],
   },
   {
     path: '/inquiries',
@@ -90,8 +92,13 @@ const routes = [
     roles: [1, 2, 3, 4],
   },
   {
+    path: '/myInquiries',
+    element: <UserMyInquiries />,
+    roles: [5],
+  },
+  {
     path: '/details/:id',
-    element: <InquiryDetailsWrapper/>,
+    element: <InquiryDetailsWrapper />,
     roles: [1, 2, 3, 4, 5],
   },
   {

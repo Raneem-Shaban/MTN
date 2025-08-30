@@ -4,10 +4,12 @@ import FilterTabs from '../../components/common/filters/FilterTabs';
 import DynamicTable from '../../components/common/tables/DynamicTable';
 import OutlineButton from '../../components/common/buttons/OutlineButton';
 import Pagination from '../../components/common/pagination/Pagination';
+import HighlightedText from '../../components/common/highlight/HighlightedText';
 import { StatusBadge } from '../../components/common/badges/StatusBadge';
 import { formatDate } from '../../../src/utils/utils';
 import { API_BASE_URL } from "../../constants/constants";
 import axios from "axios";
+import { toast } from 'react-toastify';    
 
 const itemsPerPage = 4;
 
@@ -24,56 +26,72 @@ const truncate = (text, maxLength = 20) => {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
-function AssistantPage() {
+const UserMyInquiries = () => {
   const [selectedTab, setSelectedTab] = useState('All Inquiries');
   const [currentPage, setCurrentPage] = useState(1);
-  const [data, setData] = useState([]);          
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  // جلب البيانات
+  useEffect(() => {
+    const handleSearch = (e) => {
+      setSearchQuery(e.detail);
+    };
+    window.addEventListener("sectionSearch", handleSearch);
+    return () => window.removeEventListener("sectionSearch", handleSearch);
+  }, []);
+
+  // جلب بيانات الاستفسارات الخاصة بالمستخدم الحالي
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem('token');
       try {
         setLoading(true);
 
-        // 1) جلب الاستفسارات
-        const inqRes = await axios.get(`${API_BASE_URL}/api/inquiries`, {
+        // إذا كان هناك استعلام بحث نستخدم مسار البحث العام (أو يمكنك تعديل الـ API ليعالج البحث محلياً)
+        let url = searchQuery
+          ? `${API_BASE_URL}/api/inquiries/myinquiries?query=${encodeURIComponent(searchQuery)}`
+          : `${API_BASE_URL}/api/inquiries/myinquiries`;
+
+        const res = await axios.get(url, {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
-        const inquiries = Array.isArray(inqRes.data) ? inqRes.data : [];
-        console.log("✅ API Response (inquiries):", inquiries);
+
+        const inquiries = Array.isArray(res.data) ? res.data : [];
 
         const formatted = inquiries.map((inq) => {
-          const iid = inq?.inquiry?.id;
           return {
-            id: iid,
-            title: truncate(inq?.inquiry?.title, 25),
-            body: truncate(inq?.inquiry?.body, 40),
-            status: inq?.status?.name || 'Unknown',
-            trainer: truncate(inq?.assigneeUser?.name || 'Unassigned', 20),
-            category: truncate(inq?.category?.name || 'N/A', 15),
-            user: truncate(inq?.user?.name || 'Unknown', 20),
-            createdAt: formatDate(inq?.inquiry?.created_at),
+            id: inq.id,
+            title: truncate(inq.title || inq.inquiry?.title || '', 25),
+            body: truncate(inq.body || inq.inquiry?.body || '', 40),
+            status: inq.status?.name || inq.status || 'Unknown',
+            trainer: truncate(inq.assignee_user?.name || inq.trainer || 'Unassigned', 20),
+            category: truncate((inq.category && (inq.category.name || inq.category)) || 'N/A', 15),
+            user: truncate(inq.user?.name || (inq.user_id ? `#${inq.user_id}` : 'Unknown'), 20),
+            createdAt: formatDate(inq.created_at || inq.inquiry?.created_at || inq.createdAt),
           };
         });
 
-        console.log("📦 Formatted Data:", formatted);
         setData(formatted);
+
+        if (searchQuery && formatted.length === 0) {
+          toast.info("No matching results found");
+        }
       } catch (err) {
         console.error("❌ Error fetching data:", err.response?.data || err.message);
+        toast.error('Failed to load inquiries.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+
+  }, [searchQuery]);  
 
   // زر Show
   const handleShowClick = (id) => {
-    console.log('Show button clicked with ID:', id);
     navigate(`/details/${id}`);
   };
 
@@ -99,11 +117,31 @@ function AssistantPage() {
   // أعمدة الجدول
   const columns = [
     { header: 'ID', accessor: 'id' },
-    { header: 'Trainer', accessor: 'trainer' },
-    { header: 'Category', accessor: 'category' },
-    { header: 'Sender', accessor: 'user' },
-    { header: 'Title', accessor: 'title' },
-    { header: 'Body', accessor: 'body' },
+    {
+      header: 'Trainer',
+      accessor: 'trainer',
+      cell: (value) => <HighlightedText text={value} query={searchQuery} />,
+    },
+    {
+      header: 'Category',
+      accessor: 'category',
+      cell: (value) => <HighlightedText text={value} query={searchQuery} />,
+    },
+    {
+      header: 'Sender',
+      accessor: 'user',
+      cell: (value) => <HighlightedText text={value} query={searchQuery} />,
+    },
+    {
+      header: 'Title',
+      accessor: 'title',
+      cell: (value) => <HighlightedText text={value} query={searchQuery} />,
+    },
+    {
+      header: 'Body',
+      accessor: 'body',
+      cell: (value) => <HighlightedText text={value} query={searchQuery} />,
+    },
     {
       header: 'Status',
       accessor: 'status',
@@ -128,7 +166,7 @@ function AssistantPage() {
   return (
     <div className="p-6 pt-20">
       <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--color-text-main)' }}>
-        Home
+        My Inquiries
       </h1>
 
       <FilterTabs
@@ -138,7 +176,7 @@ function AssistantPage() {
       />
 
       <div className="relative w-full">
-        <DynamicTable columns={columns} data={paginatedData} />
+        <DynamicTable columns={columns} data={paginatedData} loading={loading} />
         {totalPages > 1 && (
           <Pagination
             currentPage={currentPage}
@@ -149,6 +187,6 @@ function AssistantPage() {
       </div>
     </div>
   );
-}
+};
 
-export default AssistantPage;
+export default UserMyInquiries;

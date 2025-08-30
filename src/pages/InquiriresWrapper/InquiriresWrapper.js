@@ -9,7 +9,7 @@ const InquiriresWrapper = () => {
   const role = useSelector((state) => state.auth.user.role_id);
 
   if (role === 1 || role === 2) return <AdminInquiries />;
-  if (role === 3) return <Inquiries />;
+  if (role === 3|| role === 5) return <Inquiries />;
   if (role === 4) return <AssistantInquiries />;
 
   return <Navigate to="/login" replace />;
