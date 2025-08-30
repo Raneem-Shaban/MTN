@@ -88,14 +88,11 @@ export default function TrainerHome() {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // 👀 شو عم يرجع السيرفر
         console.log("Raw inquiries response:", res.data);
 
         const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
 
-        // 👀 شو صار بعد ما عملنا normalize
         const normalized = data.map(normalizeInquiry);
-        console.log("Normalized inquiries:", normalized);
 
         if (mounted) setInquiries(normalized);
       } catch (err) {

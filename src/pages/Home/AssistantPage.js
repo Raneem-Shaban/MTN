@@ -9,7 +9,7 @@ import { formatDate } from '../../../src/utils/utils';
 import { API_BASE_URL } from "../../constants/constants";
 import axios from "axios";
 
-const itemsPerPage = 4;
+const itemsPerPage = 5;
 
 const ticketStatusColors = {
   opened: { bg: 'var(--color-status-open-bg)', text: 'var(--color-status-open)' },

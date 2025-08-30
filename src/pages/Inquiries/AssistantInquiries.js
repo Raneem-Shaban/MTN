@@ -11,7 +11,7 @@ import { API_BASE_URL } from "../../constants/constants";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const itemsPerPage = 4;
+const itemsPerPage = 5;
 
 const ticketStatusColors = {
   opened: { bg: "var(--color-status-open-bg)", text: "var(--color-status-open)" },
@@ -147,12 +147,12 @@ function AssistantInquiries() {
     {
       header: "Title", // يعرض داخلها الـ response
       accessor: "title",
-      cell: (value) => <HighlightedText text={value} query={searchQuery} />,
+      cell: (value) => <HighlightedText text={truncate(value, 30)} query={searchQuery} />,
     },
     {
       header: "Follower",
       accessor: "follower",
-      cell: (value) => <HighlightedText text={value} query={searchQuery} />,
+      cell: (value) => <HighlightedText text={truncate(value, 30)} query={searchQuery} />,
     },
     {
       header: "Status",
@@ -162,7 +162,7 @@ function AssistantInquiries() {
     {
       header: "Section",
       accessor: "section",
-      cell: (value) => <HighlightedText text={value} query={searchQuery} />,
+      cell: (value) => <HighlightedText text={truncate(value, 30)} query={searchQuery} />,
     },
     { header: "Created At", accessor: "createdAt" },
     {
@@ -177,6 +177,7 @@ function AssistantInquiries() {
       ),
     },
   ];
+
 
   // تحسين تبديل التابات: نغيّر التبويب ونجعل المستخدم يلاحظ ذلك عن طريق إعادة تعيين الصفحة (المحتوى يتبدل فوراً)
   const handleTabChange = (tab) => {

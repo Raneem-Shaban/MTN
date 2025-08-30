@@ -20,7 +20,7 @@ export default function Login() {
 
     
     useEffect(() => {
-        if (isAuthenticated) navigate('/');
+        if (isAuthenticated) navigate('/home');
     }, [isAuthenticated, navigate]);
 
     const validateEmail = (email) =>
@@ -67,7 +67,7 @@ export default function Login() {
                 }));
 
                 toast.success("Login successful!");
-                navigate('/');
+                navigate('/home');
             } else {
                 toast.error(response.data?.message || "Authentication failed");
             }
