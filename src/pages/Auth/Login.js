@@ -17,9 +17,11 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
 
     const { isAuthenticated } = useSelector(state => state.auth);
-useEffect(() => {
-    if (isAuthenticated) navigate('/');
-}, [isAuthenticated, navigate]);
+
+    
+    useEffect(() => {
+        if (isAuthenticated) navigate('/');
+    }, [isAuthenticated, navigate]);
 
     const validateEmail = (email) =>
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -92,9 +94,9 @@ useEffect(() => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-primary)]">
             <div className='w-full max-w-6xl mx-auto rounded-lg overflow-hidden'>
-                <div className="flex flex-col min-h-[80vh] md:flex-row bg-white m-8">
+                <div className="flex flex-col min-h-[80vh] md:flex-row bg-[var(--color-bg)] m-8">
                     <div className="md:w-1/4 flex flex-col items-center justify-center bg-[var(--color-surface)] p-8 shadow-md">
-                        <h1 className="text-3xl font-semibold text-gray-800 mb-2">Welcome to</h1>
+                        <h1 className="text-3xl font-semibold text-[var(--color-text-main)] mb-2">Welcome to</h1>
                         <h2 className="text-4xl font-bold text-[var(--color-primary)] mb-6">Train Track</h2>
                         <img
                             src="/assets/img/mtn-logo.svg"
@@ -103,41 +105,41 @@ useEffect(() => {
                         />
                     </div>
 
-                    <div className="flex-1 flex items-center justify-center bg-white p-6">
+                    <div className="flex-1 flex items-center justify-center bg-[var(--color-bg)] p-6">
                         <div className="w-full max-w-md">
-                            <h2 className="text-2xl font-semibold text-start mb-6">Sign in</h2>
+                            <h2 className="text-2xl font-semibold text-[var(--color-text-main)] text-start mb-6">Sign in</h2>
                             <form className="space-y-4" onSubmit={handleSubmit}>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                                    <label className="block text-sm font-medium text-[var(--color-text-main)]">Email</label>
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="mt-1 block w-full px-4 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]"
                                         autoComplete="email"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Password</label>
+                                    <label className="block text-sm font-medium text-[var(--color-text-main)]">Password</label>
                                     <div className="relative">
                                         <input
                                             type={showPassword ? 'text' : 'password'}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                                            className="mt-1 block w-full px-4 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] pr-10"
                                             autoComplete="current-password"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(prev => !prev)}
-                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[var(--color-text-accent)] hover:text-[var(--color-text-main)] focus:outline-none"
                                         >
                                             {showPassword ? <FiEyeOff /> : <FiEye />}
                                         </button>
                                     </div>
                                     <div className="text-right mt-1">
-                                        <Link to="/forgot-password" className="text-sm text-gray-500 hover:underline">
+                                        <Link to="/forgot-password" className="text-sm text-[var(--color-text-accent)] hover:underline">
                                             Forgot Password
                                         </Link>
                                     </div>
@@ -146,14 +148,14 @@ useEffect(() => {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className={`w-full py-2 px-4 bg-[var(--color-secondary)] text-white rounded-md ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--color-secondary-hover)]'}`}
+                                    className={`w-full py-2 px-4 bg-[var(--color-secondary)] text-[var(--color-white)] rounded-md ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--color-secondary-hover)]'}`}
                                 >
                                     {isLoading ? 'Signing in...' : 'Sign in'}
                                 </button>
                             </form>
 
                             <div className="mt-4 text-center">
-                                <button onClick={() => navigate('/guest-inquiries')} type="button" className="text-sm text-gray-600 hover:underline">
+                                <button onClick={() => navigate('/guest-inquiries')} type="button" className="text-sm text-[var(--color-text-accent)] hover:underline">
                                     Browse as a guest
                                 </button>
                             </div>
@@ -162,5 +164,6 @@ useEffect(() => {
                 </div>
             </div>
         </div>
+
     );
 }

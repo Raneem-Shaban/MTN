@@ -113,7 +113,7 @@ const HomePage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-[var(--color-surface)] p-6 rounded-xl shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Inquiry Volume Over Time</h2>
+          <h2 className="text-lg font-semibold text-[var(--color-text-main)] mb-4">Inquiry Volume Over Time</h2>
 
           {loadingStats ? (
             <div className="animate-pulse h-[200px] w-full bg-[var(--color-bg-secondary)] rounded-lg"></div>
@@ -147,7 +147,7 @@ const HomePage = () => {
 
 
         <div className="bg-[var(--color-surface)] p-6 rounded-xl shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Inquiry Distribution by Category</h2>
+          <h2 className="text-lg font-semibold text-[var(--color-text-main)] mb-4">Inquiry Distribution by Category</h2>
           {loadingStats ? (
             <div className="animate-pulse h-[250px] w-full bg-[var(--color-bg-secondary)] rounded-lg"></div>
           ) : (
@@ -178,7 +178,7 @@ const HomePage = () => {
 
       <div className="grid grid-cols-1 gap-6 mt-8">
         <div className="bg-[var(--color-surface)] p-6 rounded-xl shadow-md overflow-x-auto">
-          <h2 className="text-lg font-semibold mb-4">Trainer Performance Overview</h2>
+          <h2 className="text-lg font-semibold text-[var(--color-text-main)] mb-4">Trainer Performance Overview</h2>
           {loadingStats ? (
             <div className="animate-pulse h-[300px] w-full bg-[var(--color-bg-secondary)] rounded-lg"></div>
           ) : (

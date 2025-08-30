@@ -1,25 +1,25 @@
 export const darkTheme = {
-  '--color-primary': '#D1A500',
-  '--color-primary-hover': '#FECD04',
-  '--color-secondary': '#014965',
-  '--color-secondary-hover': '#006790',
-  '--color-danger': '#EC1E28',
+  '--color-primary': '#FFD54F',
+  '--color-primary-hover': '#FFE082',
+  '--color-secondary': '#29B6F6',
+  '--color-secondary-hover': '#4FC3F7',
+  '--color-danger': '#F87171',
 
-  '--color-bg': '#111827',
-  '--color-surface': '#1F2937',
+  '--color-bg': '#181818',
+  '--color-surface': '#363636ff',
 
-  '--color-text-main': '#F5F7FA',
-  '--color-text-muted': '#9CA3AF',
-  '--color-text-accent': '#718EBF',
+  '--color-text-main': '#E5E7EB',
+  '--color-text-muted': '#A1A1AA',
+  '--color-text-accent': '#93C5FD',
 
-  '--color-border': '#374151',
+  '--color-border': '#4B5563',
 
-  '--color-cancel-back-btn-txt': '#E5E7EB',
-  '--color-cancel-back-btn-hover': '#4B5563',
+  '--color-cancel-back-btn-txt': '#D1D5DB',
+  '--color-cancel-back-btn-hover': '#6B7280',
 
-  '--color-category-one': '#4FC3F7',  
-  '--color-category-two': '#F48FB1',      
-  '--color-category-three': '#FFE082', 
+  '--color-category-one': '#81D4FA',
+  '--color-category-two': '#F8BBD0',
+  '--color-category-three': '#FFF59D',
 
-  '--color-trainer-task':'#294652'
+  '--color-trainer-task': '#3B556B'
 };

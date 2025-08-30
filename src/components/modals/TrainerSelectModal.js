@@ -32,7 +32,7 @@ const TrainerSelectModal = ({ allTrainers, selected, onSelect, onClose }) => {
                   onSelect(trainer); // ⚡ الآن نرسل الكائن كامل
                   onClose();
                 }}
-                className={`px-4 py-2 rounded-md cursor-pointer border flex justify-between items-center hover:bg-[var(--color-hover)] transition ${selected?.id === trainer.id ? 'bg-[var(--color-hover)] font-semibold' : ''
+                className={`px-4 py-2 rounded-md cursor-pointer border flex justify-between items-center hover:bg-[var(--color-hover)] text-[var(--color-text-main)] transition ${selected?.id === trainer.id ? 'bg-[var(--color-hover)] font-semibold' : ''
                   }`}
               >
                 <span>{trainer.name}</span>

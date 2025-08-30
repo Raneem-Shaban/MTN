@@ -23,7 +23,6 @@ const ReassignCell = ({ row, trainers, onUpdateTrainer }) => {
         }
       );
 
-    //   toast.success(res.data.message || "Inquiry reassigned successfully");
       toast.success( "Inquiry reassigned successfully");
       setOpen(false);
 
@@ -42,7 +41,7 @@ const ReassignCell = ({ row, trainers, onUpdateTrainer }) => {
         className={`
           w-full px-4 py-2 rounded-full text-sm font-medium 
           border border-[var(--color-border)]
-          bg-white/80 backdrop-blur-sm
+          bg-[var(--color-bg)] backdrop-blur-sm
           text-[var(--color-text-main)]
           shadow-sm flex items-center justify-between
           transition-all duration-200

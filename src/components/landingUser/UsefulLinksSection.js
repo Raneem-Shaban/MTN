@@ -35,7 +35,7 @@ const cards = [
 
 const UsefulLinksSection = () => {
   return (
-    <section className="bg-[var(--color-white)] py-20 px-4">
+    <section className="bg-[var(--color-bg)] py-20 px-4">
       <Container className="text-center">
         <motion.h2
           initial={{ opacity: 0, y: -20 }}

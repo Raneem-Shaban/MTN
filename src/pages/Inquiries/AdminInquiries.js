@@ -56,7 +56,13 @@ const AdminInquiries = () => {
         const res = await axios.get(`${API_BASE_URL}/api/userRoles/3`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setTrainers(res.data || []);
+        const normalized = (res.data || []).map(item => {
+          return {
+            ...item[0],          // البيانات الأساسية للمدرّب
+            total_weight: item.total_weight || 0, // نضيف الوزن
+          };
+        });
+        setTrainers(normalized);
       } catch (err) {
         console.error("Failed to fetch trainers:", err);
       }
@@ -216,14 +222,14 @@ const AdminInquiries = () => {
       },
     },
     {
-  header: 'Response',
-  accessor: 'response',
-  cell: (value) => {
-    if (!value) return '—';
-    const shortText = value.length > 30 ? value.substring(0, 30) + "..." : value;
-    return <HighlightedText text={shortText} query={searchQuery} />;
-  }
-},
+      header: 'Response',
+      accessor: 'response',
+      cell: (value) => {
+        if (!value) return '—';
+        const shortText = value.length > 30 ? value.substring(0, 30) + "..." : value;
+        return <HighlightedText text={shortText} query={searchQuery} />;
+      }
+    },
     {
       header: 'Status',
       accessor: 'status',

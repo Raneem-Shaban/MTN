@@ -15,6 +15,7 @@ const TrainerInTask = ({ name, delegationName, tasks, allTrainers, trainerId, on
     name: cat.name,
     description: cat.description,
     ownerName: cat.owner?.name || name,
+    weight: cat.weight || 0,
   }));
 
   const [isOpen, setIsOpen] = useState(false);
@@ -153,7 +154,7 @@ const TrainerInTask = ({ name, delegationName, tasks, allTrainers, trainerId, on
                 name={cat.name}
                 ownerName={cat.ownerName}
                 description={cat.description}
-                colorClass={colorCycle[index % colorCycle.length]}
+                weight={cat.weight} 
               />
             </motion.div>
           ))}

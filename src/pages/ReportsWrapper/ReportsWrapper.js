@@ -9,7 +9,7 @@ const ReportsWrapper = () => {
 
   if (role === 3) return <TrainerReports />;
   if (role === 1 || role === 2) return <Reports />;
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/landing" replace />;
 };
 
 export default ReportsWrapper;

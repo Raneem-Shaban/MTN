@@ -4,8 +4,8 @@ const ReassignModal = ({ isOpen, trainers, onClose, onReassign }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.5)]">
+      <div className="bg-[var(--color-bg)] rounded-xl shadow-lg w-full max-w-md p-6">
         <h2 className="text-lg font-bold mb-4 text-[var(--color-text-main)]">
           Reassign to Trainer
         </h2>
@@ -14,13 +14,14 @@ const ReassignModal = ({ isOpen, trainers, onClose, onReassign }) => {
           {trainers.map((trainer) => (
             <div
               key={trainer.id}
-              className="px-4 py-2 rounded-lg border hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] cursor-pointer transition"
+              className="px-4 py-2 rounded-lg border border-[var(--color-border)] cursor-pointer transition 
+                         hover:bg-[var(--color-trainer-task)] hover:text-[var(--color-primary)]"
               onClick={() => {
                 onReassign(trainer);
                 onClose();
               }}
             >
-              👤 {trainer.name}
+               {trainer.name}
             </div>
           ))}
         </div>
@@ -28,7 +29,8 @@ const ReassignModal = ({ isOpen, trainers, onClose, onReassign }) => {
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
+            className="px-4 py-2 rounded-lg border border-[var(--color-border)] 
+                       text-[var(--color-cancel-back-btn-txt)] hover:bg-[var(--color-cancel-back-btn-hover)]"
           >
             Cancel
           </button>

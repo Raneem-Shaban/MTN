@@ -11,14 +11,13 @@ import {
 } from 'react-icons/fa';
 
 const allNavItems = [
-  { label: 'Home', icon: <FaHome />, path: '/', roles: [1, 2, 3, 4, 5] },
+  { label: 'Home', icon: <FaHome />, path: '/home', roles: [1, 2, 3, 4, 5] },
   { label: 'Inquiries', icon: <FaQuestionCircle />, path: '/inquiries', roles: [1, 2, 3, 4] },
   { label: 'Users', icon: <FaUsers />, path: '/users', roles: [1, 2] },
   { label: 'Reports', icon: <FaChartBar />, path: '/reports', roles: [1, 2, 3] },
   { label: 'Trainers', icon: <FaChalkboardTeacher />, path: '/trainers', roles: [1, 2] },
   { label: 'Sections', icon: <FaListAlt />, path: '/sections', roles: [1, 2] },
   { label: 'Categories', icon: <FaFolderOpen />, path: '/categories', roles: [1, 2] },
-  { label: 'Evaluations', icon: <FaClipboardCheck />, path: '/evaluations', roles: [1, 2] },
   { label: 'Tasks', icon: <FaTasks />, path: '/tasks', roles: [1, 2] },
   { label: 'Favorite', icon: <FaStar />, path: '/favorite', roles: [5] },
   { label: 'My Inquiries', icon: <FaStar />, path: '/myInquiries', roles: [5] },
@@ -40,7 +39,7 @@ const Sidebar = () => {
       dispatch(logout());
       localStorage.removeItem('token');
       toast.success("Logout successful");
-      navigate('/login', { replace: true });
+      navigate('/landing', { replace: true });
     } catch (error) {
       toast.error(error.response?.data?.message || 'Logout failed');
     }
