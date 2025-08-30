@@ -100,7 +100,7 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
 
     fetchRoles();
     fetchSections();
-    fetchUsers();
+    fetchTrainers();
   }, [isOpen, token]);
 
   const handleChange = (field, value) => {
@@ -116,6 +116,26 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
     });
     return newObj;
   };
+  const fetchTrainers = async () => {
+    setLoadingUsers(true);
+    try {
+      const res = await axios.get(
+        'https://2b5c1c46d106.ngrok-free.app/api/userRoles/3',
+        {
+          headers: { Authorization: `Bearer ${token}` }, // إذا احتاج الـ API توكن
+        }
+      );
+
+      // البيانات تأتي كـ array من objects تحتوي على المفتاح "0"
+      const trainers = res.data.map(item => item[0]);
+      setUsers(trainers);
+    } catch (err) {
+      toast.error('Failed to load trainers');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
 
   const handleSubmit = () => {
     let cleanedForm = cleanObject(form);
@@ -225,7 +245,6 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
             }}
           />
 
-
           {form.role_id === 3 && (
             <div className="relative">
               <Select
@@ -240,6 +259,7 @@ const UserEditModal = ({ isOpen, onClose, onSubmit, user }) => {
               <FiChevronDown className="absolute right-3 top-9 text-[var(--color-text-muted)] pointer-events-none" />
             </div>
           )}
+
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6">

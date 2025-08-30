@@ -21,6 +21,7 @@ import SectionDetails from "../pages/Sections/SectionDetails";
 import InquiryDetailsWrapper from "../pages/InquiryDetailsWrapper/InquiryDetailsWrapper";
 import Profile from "../pages/Auth/Profile";
 import UserDetails from "../pages/Users/UserDetails";
+import GuestInquiries from "../pages/Guest/GuestInquiries";
 
 const routes = [
   {

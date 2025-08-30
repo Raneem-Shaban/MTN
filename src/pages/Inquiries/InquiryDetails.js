@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../../constants/constants';
 import { StatusBadge } from '../../components/common/badges/StatusBadge';
-import { FaUser, FaEnvelope, FaTag, FaClock, FaUserTie, FaStar, FaPaperclip } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaTag, FaClock, FaUserTie, FaStar, FaPaperclip, FaTimes } from 'react-icons/fa';
 
 const ticketStatusColors = {
   opened: { bg: 'var(--color-status-open-bg)', text: 'var(--color-status-open)' },
@@ -17,6 +17,19 @@ const InquiryDetails = () => {
   const { id } = useParams();
   const [inquiry, setInquiry] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedFollowUp, setSelectedFollowUp] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = (followUp) => {
+    setSelectedFollowUp(followUp);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedFollowUp(null);
+    setIsModalOpen(false);
+  };
+
 
   useEffect(() => {
     const fetchInquiry = async () => {
@@ -93,6 +106,15 @@ const InquiryDetails = () => {
       </div>
     );
 
+    const getAttachmentUrl = (file) => {
+  if (!file?.url) return "#";
+  // إذا الرابط كامل (يبدأ بـ http) خليه كما هو
+  if (file.url.startsWith("http")) return file.url;
+  // إذا نسبي، أضف API_BASE_URL
+  return `${API_BASE_URL}/${file.url}`;
+};
+
+
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-5 lg:p-6 my-20 max-w-7xl mx-auto space-y-6">
 
@@ -166,7 +188,11 @@ const InquiryDetails = () => {
                   default: break;
                 }
                 return (
-                  <div key={f.id} className={`${bgColor} ${textColor} rounded-lg p-3 sm:p-4 md:p-3 lg:p-4 shadow-sm hover:shadow-md transition-all duration-200 w-full overflow-hidden`}>
+                  <div
+                    key={f.id}
+                    onClick={() => openModal(f)}
+                    className={`${bgColor} ${textColor} rounded-lg p-3 sm:p-4 md:p-3 lg:p-4 shadow-sm hover:shadow-md transition-all duration-200 w-full overflow-hidden cursor-pointer`}
+                  >
                     <p className="font-semibold text-xs sm:text-sm md:text-base">Follow Up #{index + 1}</p>
                     <p className="text-[var(--color-text-main)] text-xs sm:text-sm md:text-base whitespace-pre-wrap break-words mt-1">{f.response || '—'}</p>
                     <p className="text-[var(--color-text-muted)] text-xs sm:text-sm md:text-base mt-2">Created: {formatDate(f.created_at)}</p>
@@ -233,6 +259,67 @@ const InquiryDetails = () => {
         </Card>
 
       </div>
+
+     {isModalOpen && selectedFollowUp && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="bg-[var(--color-white)] rounded-xl shadow-lg w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 p-6 relative max-h-[90vh] overflow-y-auto">
+      <button 
+        onClick={closeModal} 
+        className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
+      >
+        <FaTimes size={20} />
+      </button>
+      <h3 className="text-xl font-bold text-[var(--color-primary)] mb-4">Follow Up Details</h3>
+
+      {/* ✅ اسم الشخص يلي عمل الـ follow up */}
+      <p className="mb-2">
+        <span className="font-semibold">Follower:</span> {selectedFollowUp.follower?.name || "—"}
+      </p>
+
+      {/* ✅ اسم القسم */}
+      <p className="mb-2">
+        <span className="font-semibold">Section:</span> {selectedFollowUp.section?.name || "—"}
+      </p>
+
+      <p className="mb-2">
+        <span className="font-semibold">Status:</span> {selectedFollowUp.status}
+      </p>
+
+      <p className="mb-2"><span className="font-semibold">Response:</span></p>
+      <p className="mb-4 whitespace-pre-wrap">{selectedFollowUp.response || '—'}</p>
+
+      <p className="mb-2">
+        <span className="font-semibold">Created At:</span> {formatDate(selectedFollowUp.created_at)}
+      </p>
+
+      {/* Attachments */}
+      {selectedFollowUp.attachments && selectedFollowUp.attachments.length > 0 ? (
+        <div className="mt-4">
+          <h4 className="font-semibold mb-2">Attachments:</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {selectedFollowUp.attachments.map((file, idx) => (
+              <a
+                key={idx}
+                href={getAttachmentUrl(file)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-2 bg-[var(--color-surface)] rounded-lg p-2 shadow-sm hover:shadow-md transition text-xs sm:text-sm md:text-base"
+              >
+                <FaPaperclip className="text-[var(--color-primary)]" />
+                <span className="truncate">{file.url.split("/").pop()}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="text-[var(--color-text-muted)] mt-2">No attachments</p>
+      )}
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 };

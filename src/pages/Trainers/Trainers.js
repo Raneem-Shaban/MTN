@@ -6,6 +6,7 @@ import Pagination from '../../components/common/pagination/Pagination';
 import OutlineButton from '../../components/common/buttons/OutlineButton';
 import { API_BASE_URL } from '../../constants/constants';
 
+
 const Trainers = () => {
   const [trainers, setTrainers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);

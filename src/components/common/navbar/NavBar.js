@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiSearch, FiMenu, FiX } from "react-icons/fi";
 import { FaMoon, FaUser, FaGlobe } from "react-icons/fa";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link,matchPath } from "react-router-dom";
+
 
 const NavBar = ({ onSearch }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,7 +12,29 @@ const NavBar = ({ onSearch }) => {
   const debounceTimeout = useRef(null);
 
   const currentPath = location.pathname;
-  const showSearch = currentPath !== "/" && currentPath !== "/reports";
+
+  const excludedPaths = [
+  "/",
+  "/reports",
+  "/profile",
+  "/tasks",
+  "/evaluations",
+  "/profile",
+  "/trainers",
+  "/categories",
+];
+
+const dynamicPaths = [
+  "/users/:userId",
+  "/trainers/:id",
+  "/sections/:id",
+  "/details/:id"
+];
+
+
+const showSearch =
+  !excludedPaths.includes(currentPath) &&
+  !dynamicPaths.some((path) => matchPath({ path, end: true }, currentPath));
 
   // Detect scroll for header shadow animation
   useEffect(() => {

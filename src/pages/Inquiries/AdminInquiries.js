@@ -11,6 +11,8 @@ import { API_BASE_URL } from '../../constants/constants';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationModal';
+import HighlightedText from '../../components/common/highlight/HighlightedText';
+
 
 const itemsPerPage = 10;
 
@@ -30,6 +32,7 @@ const AdminInquiries = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [trainers, setTrainers] = useState([]);
+
 
   const navigate = useNavigate();
 
@@ -168,12 +171,23 @@ const AdminInquiries = () => {
     })
     : [];
 
-  const filteredData =
-    selectedTab === 'All Inquiries' || selectedTab === 'Trashed Inquiries'
-      ? transformedData
-      : transformedData.filter(
-        (item) => item.status.toLowerCase() === selectedTab.toLowerCase()
-      );
+  const filteredData = transformedData.filter(item => {
+    // فلترة حسب الـ tab
+    const statusMatch =
+      selectedTab === 'All Inquiries' || selectedTab === 'Trashed Inquiries'
+        ? true
+        : item.status.toLowerCase() === selectedTab.toLowerCase();
+
+    // فلترة حسب البحث
+    const searchMatch = searchQuery
+      ? Object.values(item).some(val =>
+        val?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      : true;
+
+    return statusMatch && searchMatch;
+  });
+
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
@@ -187,16 +201,29 @@ const AdminInquiries = () => {
 
   const columns = [
     { header: 'ID', accessor: 'id' },
-    { header: 'Title', accessor: 'title' },
+    {
+      header: 'Title',
+      accessor: 'title',
+      cell: (value) => <HighlightedText text={value} query={searchQuery} />
+    },
     {
       header: 'Body',
       accessor: 'body',
       cell: (value) => {
         if (!value) return '—';
-        return value.length > 30 ? value.substring(0, 30) + "..." : value;
+        const shortText = value.length > 30 ? value.substring(0, 30) + "..." : value;
+        return <HighlightedText text={shortText} query={searchQuery} />
       },
     },
-    { header: 'Response', accessor: 'response' },
+    {
+  header: 'Response',
+  accessor: 'response',
+  cell: (value) => {
+    if (!value) return '—';
+    const shortText = value.length > 30 ? value.substring(0, 30) + "..." : value;
+    return <HighlightedText text={shortText} query={searchQuery} />;
+  }
+},
     {
       header: 'Status',
       accessor: 'status',
@@ -204,8 +231,16 @@ const AdminInquiries = () => {
         <StatusBadge value={value} colorMap={ticketStatusColors} />
       ),
     },
-    { header: 'Trainer Name', accessor: 'trainer' },
-    { header: 'Category', accessor: 'category' },
+    {
+      header: 'Trainer Name',
+      accessor: 'trainer',
+      cell: (value) => <HighlightedText text={value} query={searchQuery} />
+    },
+    {
+      header: 'Category',
+      accessor: 'category',
+      cell: (value) => <HighlightedText text={value} query={searchQuery} />
+    },
     {
       header: 'Created At',
       accessor: 'created_at',

@@ -33,16 +33,33 @@ const TrainersBoard = () => {
           })
         ]);
 
+        // معالجة الفئات كما كانت سابقًا
         const categoriesFromApi = categoriesResponse.data.map(cat => ({
           id: cat.id,
           name: cat.name,
           description: cat.description,
           ownerId: cat.owner_id,
           owner: cat.owner,
+          weight: cat.weight || 0,
         }));
-
         setAllCategories(categoriesFromApi);
-        setTrainers(trainersResponse.data);
+
+        // معالجة المدربين بناءً على الشكل الجديد للـ API
+        const trainersFromApi = trainersResponse.data.map(item => {
+          const t = item["0"];
+          const categories = t.categories || [];
+          const totalWeight = categories.reduce((sum, cat) => sum + (cat.weight || 0), 0);
+
+          return {
+            id: t.id,
+            name: t.name,
+            delegation_id: t.delegation_id,
+            categories: t.categories || [],
+            totalWeight
+          };
+        });
+
+        setTrainers(trainersFromApi);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("Failed to load data");
@@ -53,6 +70,7 @@ const TrainersBoard = () => {
 
     fetchData();
   }, []);
+
 
   const handleResetAll = async () => {
     const token = localStorage.getItem('token');
@@ -110,6 +128,7 @@ const TrainersBoard = () => {
         description: cat.description,
         ownerId: cat.owner_id,
         owner: cat.owner,
+        weight: cat.weight || 0,
       }));
 
       setAllCategories(categoriesFromApi);
@@ -176,6 +195,7 @@ const TrainersBoard = () => {
                 name={trainer.name}
                 delegationName={delegationTrainer?.name || ''}
                 tasks={trainerCategories}
+                totalWeight={trainer.totalWeight}
                 isResetting={isResetting}
                 allTrainers={trainers}
                 trainerId={trainer.id}

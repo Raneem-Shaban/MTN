@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TrainerInTask = ({ name, delegationName, tasks, allTrainers, trainerId, onCategoryAssigned, selectedCategories,
-  setSelectedCategories }) => {
+  setSelectedCategories, totalWeight }) => {
   const categories = tasks.map((cat) => ({
     id: cat.id,
     name: cat.name,
@@ -81,6 +81,10 @@ const TrainerInTask = ({ name, delegationName, tasks, allTrainers, trainerId, on
           {name[0]}
         </div>
         <h3 className="text-lg font-semibold text-[var(--color-text-main)] mt-2">{name}</h3>
+        <p className="text-sm text-[var(--color-text-muted)]">
+          Total Weight: {tasks.reduce((sum, cat) => sum + (cat.weight || 0), 0)}
+        </p>
+
       </div>
 
       {/* Delegation */}
@@ -128,7 +132,6 @@ const TrainerInTask = ({ name, delegationName, tasks, allTrainers, trainerId, on
         />
       )}
 
-      {/* Categories */}
       {/* Categories */}
       <div className="space-y-3">
         <AnimatePresence>

@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import HighlightedText from '../../components/common/highlight/HighlightedText';
 
 const tabs = ['All users', 'Admin', 'Trainer', 'User', 'Assistant', 'Blocked Users'];
 
@@ -42,6 +43,8 @@ const UsersPage = () => {
   const [sections, setSections] = useState([]);
   const [delegations, setDelegations] = useState({});
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+
 
   const currentUser = useSelector((state) => state.auth.user);
 
@@ -107,6 +110,7 @@ const UsersPage = () => {
 
   useEffect(() => {
     const handleSearch = async (query) => {
+      setSearchQuery(query);
       const token = localStorage.getItem('token');
 
       if (!query) {
@@ -222,6 +226,7 @@ const UsersPage = () => {
     if (newUser.status === 1) displayStatus = newUser.email_verified_at ? 'Active' : 'Pending';
 
     const sectionName = sections.find((s) => s.id === newUser.section_id)?.name || 'Unknown';
+    const divisionName = newUser.section?.division || sections.find((s) => s.id === newUser.section_id)?.division || 'Unknown';
     const delegationName = delegations[newUser.role_id]?.get(newUser.id) || 'None';
 
     const formatted = {
@@ -231,6 +236,7 @@ const UsersPage = () => {
       rawStatus: newUser.status,
       position: newUser.position || '',
       section: sectionName,
+      division: divisionName,
       delegation: delegationName,
     };
 
@@ -352,8 +358,16 @@ const UsersPage = () => {
 
 
   const columns = [
-    { header: 'Name', accessor: 'name' },
-    { header: 'Email', accessor: 'email' },
+    {
+      header: 'Name',
+      accessor: 'name',
+      cell: (val) => <HighlightedText text={val} query={searchQuery} />
+    },
+    {
+      header: 'Email',
+      accessor: 'email',
+      cell: (val) => <HighlightedText text={val} query={searchQuery} />
+    },
     {
       header: 'Role',
       accessor: 'role',
@@ -376,20 +390,28 @@ const UsersPage = () => {
       ),
     },
     { header: 'Position', accessor: 'position' },
-    { header: 'Section', accessor: 'section' },
-    { header: 'Division', accessor: 'division' },
-    { header: 'Delegation', accessor: 'delegation' },
     {
-    header: 'Show Details', // ← العمود الجديد
-    accessor: 'details',
-    cell: (_, row) => (
-      <OutlineButton
-        title="Show Details"
-        color="primary"
-        onClick={() => navigate(`/users/${row.id}`)}
-      />
-    ),
-  },
+      header: 'Section',
+      accessor: 'section',
+      cell: (val) => <HighlightedText text={val} query={searchQuery} />
+    },
+    { header: 'Division', accessor: 'division' },
+    {
+      header: 'Division',
+      accessor: 'division',
+      cell: (val) => <HighlightedText text={val} query={searchQuery} />
+    },
+    {
+      header: 'Show Details', // ← العمود الجديد
+      accessor: 'details',
+      cell: (_, row) => (
+        <OutlineButton
+          title="Show Details"
+          color="primary"
+          onClick={() => navigate(`/users/${row.id}`)}
+        />
+      ),
+    },
     {
       header: 'Edit',
       accessor: 'edit',

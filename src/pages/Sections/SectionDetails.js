@@ -4,53 +4,81 @@ import InquiryAnswer from "../../components/common/collabses/InquiryAnswer";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { API_BASE_URL } from "../../constants/constants";
-import LoadingSpinner from "../../components/loadingSpinner/LoadingSpinner";
 
 const SectionDetails = () => {
   const { id } = useParams();
   const [section, setSection] = useState(null);
   const [inquiries, setInquiries] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
-  const [loading, setLoading] = useState(true); // حالة التحميل
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true); // بدء التحميل
+        setLoading(true);
         const token = localStorage.getItem("token");
 
+        // جلب بيانات القسم
         const sectionRes = await axios.get(`${API_BASE_URL}/api/sections/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSection(sectionRes.data);
 
-        const inqRes = await axios.get(`${API_BASE_URL}/api/followupsSection/${id}`, {
+        // جلب جميع follow-ups للقسم
+        const followUpsRes = await axios.get(`${API_BASE_URL}/api/followupsSection/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        const followUpsData = followUpsRes.data;
 
-        const formatted = inqRes.data.map((f) => ({
-          id: f.inquiry.id,
-          title: f.inquiry.title,
-          body: f.inquiry.body,
-          status: f.status === 1 ? "Open" : "Closed",
-          createdAt: f.inquiry.created_at,
-          response: f.inquiry.response,
-          closedAt: f.inquiry.closed_at,
-          userName: f.inquiry.user?.name,              // صاحب الاستفسار
-          assigneeName: f.inquiry.assignee_user?.name, // المكلّف
-          categoryName: f.inquiry.category?.name,      // التصنيف
-          statusName: f.inquiry.status?.name,
-          attachments: f.inquiry.attachments || [] 
-        }));
+        // تجميع follow-ups حسب inquiry_id
+        const inquiriesMap = {};
+        followUpsData.forEach(fup => {
+          const inqId = fup.inquiry_id;
+          if (!inquiriesMap[inqId]) inquiriesMap[inqId] = [];
+          inquiriesMap[inqId].push(fup);
+        });
 
-        setInquiries(formatted);
+        // جلب بيانات كل inquiry وربط follow-ups
+        const inquiriesDetails = await Promise.all(
+          Object.keys(inquiriesMap).map(async (inqId) => {
+            try {
+              const res = await axios.get(`${API_BASE_URL}/api/inquiries/${inqId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              const inq = res.data;
+
+              return {
+                id: inq.id,
+                title: inq.title,
+                body: inq.body,
+                status: inq.status.name === "opened" ? "Open" : "Closed",
+                createdAt: inq.created_at,
+                response: inq.response,
+                closedAt: inq.closed_at,
+                userName: inq.user?.name,
+                assigneeName: inq.assignee_user?.name,
+                categoryName: inq.category?.name,
+                statusName: inq.status && inq.status.name ? inq.status.name : "N/A",
+                attachments: inq.attachments || [],
+                followUps: inquiriesMap[inq.id] || [],
+              };
+            } catch (err) {
+              console.error("Failed to fetch inquiry details", err);
+              return null;
+            }
+          })
+        );
+
+        // إزالة أي null
+        setInquiries(inquiriesDetails.filter(i => i !== null));
       } catch (error) {
         console.error(error);
         toast.error("Failed to load section details");
       } finally {
-        setLoading(false); // انتهى التحميل
+        setLoading(false);
       }
     };
+
     fetchData();
   }, [id]);
 
@@ -86,6 +114,7 @@ const SectionDetails = () => {
           {inquiries.map((inq) => (
             <InquiryAnswer
               key={inq.id}
+              inquiryId={inq.id}
               question={inq.title}
               answer={inq.body}
               status={inq.status}
@@ -100,6 +129,8 @@ const SectionDetails = () => {
               categoryName={inq.categoryName}
               statusName={inq.statusName}
               attachments={inq.attachments}
+              followUps={inq.followUps}
+              showRatings={false}
             />
           ))}
         </div>

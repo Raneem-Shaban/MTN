@@ -153,7 +153,7 @@ useEffect(() => {
                             </form>
 
                             <div className="mt-4 text-center">
-                                <button type="button" className="text-sm text-gray-600 hover:underline">
+                                <button onClick={() => navigate('/guest-inquiries')} type="button" className="text-sm text-gray-600 hover:underline">
                                     Browse as a guest
                                 </button>
                             </div>

@@ -17,6 +17,7 @@ import { setSections, addSection, removeSection } from '../../store/slices/secti
 import EditSectionModal from '../../components/modals/EditSectionModal';
 import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationModal';
 import { useNavigate } from 'react-router-dom';
+import HighlightedText from '../../components/common/highlight/HighlightedText';
 
 
 const Sections = () => {
@@ -31,6 +32,7 @@ const Sections = () => {
   const [editingSection, setEditingSection] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -223,6 +225,7 @@ const Sections = () => {
   };
 
   const handleSearch = async (query) => {
+    setSearchQuery(query);
     const token = localStorage.getItem('token');
     if (!token) {
       toast.error('Authentication token not found. Please log in again.');
@@ -282,9 +285,21 @@ const Sections = () => {
   );
 
   const columns = [
-    { header: 'Section', accessor: 'name' },
-    { header: 'Division', accessor: 'division' },
-    { header: 'Email', accessor: 'email' },
+   {
+    header: 'Section',
+    accessor: 'name',
+    cell: (value) => <HighlightedText text={value} query={searchQuery} />
+  },
+  {
+    header: 'Division',
+    accessor: 'division',
+    cell: (value) => <HighlightedText text={value} query={searchQuery} />
+  },
+  {
+    header: 'Email',
+    accessor: 'email',
+    cell: (value) => <HighlightedText text={value} query={searchQuery} />
+  },
     { header: 'Users', accessor: 'usersCount' },
     {
       header: 'Show',

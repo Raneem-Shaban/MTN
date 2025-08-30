@@ -9,11 +9,12 @@ import VerifyCode from '../pages/Auth/VerifyCode';
 import ResetPassword from '../pages/Auth/ResetPassword';
 import UserLandingPage from '../pages/Landing/UserLandingPage';
 import ProtectedRoute from '../routes/ProtectedRoute';
+import GuestInquiries from '../pages/Guest/GuestInquiries';
 
 
 const Layout = () => {
     const location = useLocation();
-    const hideLayoutRoutes = ['/login', '/forgot-password','/verify-code','/reset-password','/landing'];
+    const hideLayoutRoutes = ['/login', '/forgot-password','/verify-code','/reset-password','/landing','/guest-inquiries'  ];
 
     const shouldHideLayout = hideLayoutRoutes.includes(location.pathname);
 
@@ -32,6 +33,7 @@ const Layout = () => {
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/verify-code" element={<VerifyCode />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/guest-inquiries" element={<GuestInquiries/>} />
                         <Route path="/*" element={
                             <ProtectedRoute>
                                 <AppRoutes />
