@@ -10,7 +10,6 @@ import TrainerReports from "../pages/TrainerReports/TrainerReports";
 import Favorite from "../pages/Favorite/Favorite";
 import Unauthorized from "../pages/Unauthorized/Unauthorized";
 import Categories from "../pages/Categories/Categories";
-import Evaluations from "../pages/Evaluations/Evaluations";
 import ReportsWrapper from "../pages/ReportsWrapper/ReportsWrapper";
 import HomeWrapper from "../pages/HomeWrapper/HomeWrapper";
 import UserAddInquery from "../pages/Inquiries/UserAddInquery";
@@ -32,7 +31,7 @@ const routes = [
     roles: [1, 2, 3, 4, 5],
   },
   {
-    path: '/',
+    path: '/home',
     element: <HomeWrapper />,
     roles: [1, 2, 3, 4, 5],
   },
@@ -74,11 +73,6 @@ const routes = [
   {
     path: '/categories',
     element: <Categories />,
-    roles: [1, 2],
-  },
-  {
-    path: '/evaluations',
-    element: <Evaluations />,
     roles: [1, 2],
   },
   {

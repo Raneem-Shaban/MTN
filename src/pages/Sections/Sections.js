@@ -306,7 +306,7 @@ const Sections = () => {
       accessor: 'show',
       cell: (_value, row) => (
         <OutlineButton
-          title="Show"
+          title="Show Details"
           color="secondary"
           onClick={() => navigate(`/sections/${row.id}`)}
         />

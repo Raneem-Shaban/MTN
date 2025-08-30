@@ -10,10 +10,9 @@ const CategoryContainer = ({
   isResetting,
   onCategoryDrop,
   onRandomAssign,
-  selectedCategories, 
-  setSelectedCategories 
+  selectedCategories,
+  setSelectedCategories
 }) => {
-  // const [selectedCategories, setSelectedCategories] = useState([]);
 
   const toggleCategorySelection = (category) => {
     setSelectedCategories((prev) =>
@@ -23,14 +22,13 @@ const CategoryContainer = ({
     );
   };
 
-  const colorCycle = ['bg-category-one', 'bg-category-two', 'bg-category-three'];
 
   return (
     <div className="fixed top-16 right-0 h-[calc(100vh-64px)] w-32 bg-[var(--color-bg)] shadow-md z-50 flex flex-col transition-all duration-300">
 
       {/* Header */}
       <div className="flex flex-col items-center justify-center py-3 border-b">
-        <h2 className="text-lg font-semibold text-center">Categories</h2>
+        <h2 className="text-lg text-[var(--color-text-main)] font-semibold text-center">Categories</h2>
 
         <div className="mt-2 flex flex-col items-center space-y-2 w-full">
           <div className="flex w-full justify-center">
@@ -118,7 +116,7 @@ const CategoryContainer = ({
             >
               <CategoryItem
                 name={cat.name}
-                colorClass={colorCycle[index % colorCycle.length]}
+                weight={cat.weight}   // أرسل الوزن
                 isSelected={selectedCategories.some((c) => c.id === cat.id)}
               />
             </motion.div>

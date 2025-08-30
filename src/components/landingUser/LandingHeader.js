@@ -6,12 +6,9 @@ const LandingHeader = () => {
       <Container className="flex justify-between items-center py-4">
         <div className="flex items-center gap-2">
           <img src="/assets/img/mtn-logo.svg" alt="Logo" className="h-8" />
-          <span className="font-semibold text-md">Training Tracking System</span>
+          <span className="font-semibold text-md">TrainTrack</span>
         </div>
-        <nav className="space-x-4 text-sm">
-          <a href="/home" className="hover:underline">Home</a>
-          <a href="/login" className="hover:underline">Login</a>
-        </nav>
+
       </Container>
     </header>
   );

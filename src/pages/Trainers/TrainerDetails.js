@@ -33,7 +33,7 @@ const TrainerDetails = () => {
 
         const { inqs, totalResponded, opened, closed, pending, reopened } = response.data;
 
-        setTrainer({ id: trainerId, totalResponded, opened, closed, pending, reopened });
+        setTrainer({ id: trainerId,name: inqs[0]?.assignee_user?.name || "Unknown", totalResponded, opened, closed, pending, reopened });
 
         // جلب التفاصيل لكل استعلام مع الـ ratings
         const detailedInqs = await Promise.all(
@@ -108,7 +108,7 @@ const TrainerDetails = () => {
         }}
       >
         <h1 className="text-3xl font-extrabold mb-3">
-          Trainer #{trainer?.id}
+          {trainer?.name}
         </h1>
         <p className="text-md mb-1">
           <span className="font-semibold">Total Responded:</span>{" "}

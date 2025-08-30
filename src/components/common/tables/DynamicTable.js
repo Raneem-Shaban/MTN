@@ -8,8 +8,7 @@ const DynamicTable = ({ columns, data, onRowClick }) => {
       }}
     >
       <table
-        className="min-w-full divide-y"
-        style={{ borderColor: 'var(--color-text-muted)' }}
+        className="min-w-full text-[var(--color-text-main)] divide-y"
       >
         <thead style={{ backgroundColor: 'var(--color-bg)' }}>
           <tr>
@@ -32,7 +31,7 @@ const DynamicTable = ({ columns, data, onRowClick }) => {
             <tr
               key={rowIndex}
               onClick={() => onRowClick?.(row)}
-              className="cursor-pointer transition hover:[background-color:var(--color-light-gray)]"
+              className="cursor-pointer transition hover:[background-color:var(--color-surface)]"
             >
               {columns.map((col) => (
                 <td

@@ -1,9 +1,17 @@
 import Button from '../common/buttons/Button'
 import Container from '../layout/Container';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 
 const HeroSection = () => {
+
+    const navigate = useNavigate();
+
+    const handleGetStarted = () => {
+        navigate('/login'); // الانتقال إلى صفحة login
+    }
+
     return (
         <section className="bg-[var(--color-surface)]">
             <Container className="grid lg:grid-cols-2 gap-24 items-center py-32">
@@ -22,8 +30,9 @@ const HeroSection = () => {
                         facilitating tracking and evaluation
                     </p>
                     <div className="flex gap-4 justify-center lg:justify-start">
-                        <Button variant="primary">Get Started</Button>
-                        <Button variant="secondary">Learn More</Button>
+                        <Button variant="primary" onClick={handleGetStarted}>
+                            Get Started
+                        </Button>
                     </div>
                 </motion.div>
 

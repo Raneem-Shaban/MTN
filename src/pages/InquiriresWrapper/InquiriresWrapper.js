@@ -12,7 +12,7 @@ const InquiriresWrapper = () => {
   if (role === 3|| role === 5) return <Inquiries />;
   if (role === 4) return <AssistantInquiries />;
 
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/landing" replace />;
 }
 
 export default InquiriresWrapper

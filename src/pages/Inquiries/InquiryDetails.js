@@ -82,16 +82,16 @@ const InquiryDetails = () => {
   };
 
   const Card = ({ title, children }) => (
-    <div className="bg-[var(--color-white)] rounded-xl shadow-md p-4 sm:p-6 md:p-5 lg:p-6 space-y-3 sm:space-y-4 md:space-y-3 lg:space-y-4 border-[var(--color-border)] w-full overflow-hidden">
+    <div className="bg-[var(--color-bg)] rounded-xl shadow-md p-4 sm:p-6 md:p-5 lg:p-6 space-y-3 sm:space-y-4 md:space-y-3 lg:space-y-4 border-[var(--color-border)] w-full overflow-hidden">
       <h3 className="text-lg sm:text-xl md:text-lg lg:text-xl font-bold text-[var(--color-primary)] mb-2">{title}</h3>
       {children}
     </div>
   );
 
   const InfoItem = ({ icon: Icon, label, value }) => (
-    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+    <div className="flex items-center gap-2 sm:gap-3  min-w-0">
       <Icon className="text-[var(--color-text-accent)] min-w-[20px] md:min-w-[22px]" />
-      <p className="text-xs sm:text-sm md:text-base break-words">
+      <p className="text-xs text-[var(--color-text-main)] sm:text-sm md:text-base break-words">
         <span className="font-semibold">{label}:</span> <span className="text-[var(--color-text-main)]">{value}</span>
       </p>
     </div>
@@ -121,12 +121,12 @@ const InquiryDetails = () => {
       <h2 className="text-2xl sm:text-3xl md:text-2xl lg:text-3xl font-bold text-[var(--color-text-main)] mb-6">Inquiry Details</h2>
 
       {/* Grid Responsive */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-6 lg:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-6 lg:gap-6 ">
 
         {/* Inquiry Info */}
         <Card title="Inquiry Info">
           <InfoItem icon={FaTag} label="Title" value={title} />
-          <p className="text-[var(--color-text-main)] text-xs sm:text-sm md:text-base whitespace-pre-wrap break-words">
+          <p className="text-[var(--color-text-main)]  text-xs sm:text-sm md:text-base whitespace-pre-wrap break-words">
             <span className="font-semibold">Body:</span> {body}
           </p>
           <p className="text-[var(--color-text-main)] text-xs sm:text-sm md:text-base whitespace-pre-wrap break-words">
@@ -134,7 +134,7 @@ const InquiryDetails = () => {
           </p>
           <InfoItem icon={FaClock} label="Closed At" value={formatDate(closed_at)} />
           <div className="mt-2">
-            <p className="font-semibold text-xs sm:text-sm md:text-base">Status:</p>
+            <p className="font-semibold text-xs sm:text-sm md:text-base text-[var(--color-text-main)]">Status:</p>
             <StatusBadge value={status?.name} colorMap={ticketStatusColors} />
           </div>
 
@@ -262,7 +262,7 @@ const InquiryDetails = () => {
 
      {isModalOpen && selectedFollowUp && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    <div className="bg-[var(--color-white)] rounded-xl shadow-lg w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 p-6 relative max-h-[90vh] overflow-y-auto">
+    <div className="bg-[var(--color-surface)] rounded-xl shadow-lg w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 p-6 relative max-h-[90vh] overflow-y-auto">
       <button 
         onClick={closeModal} 
         className="absolute top-4 right-4 text-[var(--color-text-muted)] hover:text-[var(--color-danger)]"
@@ -271,25 +271,28 @@ const InquiryDetails = () => {
       </button>
       <h3 className="text-xl font-bold text-[var(--color-primary)] mb-4">Follow Up Details</h3>
 
-      {/* ✅ اسم الشخص يلي عمل الـ follow up */}
       <p className="mb-2">
-        <span className="font-semibold">Follower:</span> {selectedFollowUp.follower?.name || "—"}
+        <span className="font-semibold text-[var(--color-text-main)]">Follower:</span> 
+        <span className='text-[var(--color-text-main)]'>{selectedFollowUp.follower?.name || "—"}</span>
       </p>
 
       {/* ✅ اسم القسم */}
       <p className="mb-2">
-        <span className="font-semibold">Section:</span> {selectedFollowUp.section?.name || "—"}
+        <span className="font-semibold text-[var(--color-text-main)]">Section:</span> 
+        <span className='text-[var(--color-text-main)]'>{selectedFollowUp.section?.name || "—"}</span>
       </p>
 
       <p className="mb-2">
-        <span className="font-semibold">Status:</span> {selectedFollowUp.status}
+        <span className="font-semibold text-[var(--color-text-main)]">Status: </span>
+         <span className='text-[var(--color-text-main)]'>{selectedFollowUp.status}</span>
       </p>
 
-      <p className="mb-2"><span className="font-semibold">Response:</span></p>
-      <p className="mb-4 whitespace-pre-wrap">{selectedFollowUp.response || '—'}</p>
+      <p className="mb-2"><span className="text-[var(--color-text-main)] font-semibold">Response:</span></p>
+      <p className="mb-4 whitespace-pre-wrap text-[var(--color-text-main)]">{selectedFollowUp.response || '—'}</p>
 
       <p className="mb-2">
-        <span className="font-semibold">Created At:</span> {formatDate(selectedFollowUp.created_at)}
+        <span className="font-semibold text-[var(--color-text-main)]">Created At: </span>
+         <span className='text-[var(--color-text-main)]'>{formatDate(selectedFollowUp.created_at)}</span>
       </p>
 
       {/* Attachments */}

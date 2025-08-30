@@ -13,7 +13,7 @@ const Trainers = () => {
   const [loading, setLoading] = useState(true); // ✅ حالة تحميل خاصة بالجدول
   const navigate = useNavigate();
 
-  const pageSize = 7;
+  const pageSize = 10; 
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -52,7 +52,8 @@ const Trainers = () => {
     { header: 'Closed', accessor: 'closed_inquiries' },
     { header: 'Pending', accessor: 'pending_inquiries' },
     { header: 'Reopened', accessor: 'reopened_inquiries' },
-    { header: 'Avg Closing', accessor: 'avg_closing_hours' },
+    { header: 'Avg Closing Hours', accessor: 'avg_closing_hours' },
+    { header: 'Avg Rating', accessor: 'avg_rating' },
     { header: 'Last Delegation', accessor: 'last_delegated_user' },
     {
       header: 'Actions',

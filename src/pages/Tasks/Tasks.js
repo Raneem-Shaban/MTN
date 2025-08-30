@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import TrainersBoard from '../../components/trainersBoard/TrainersBoard';
 
 const Tasks = () => {
-  const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <main className="relative min-h-screen p-5 py-20">

@@ -15,7 +15,6 @@ const UserLandingPage = () => {
       <FeaturesSection />
       <InfoBar />
       <HowItWorksSection />
-      <UsefulLinksSection />
       <CallToAction />
       <LandingFooter />
     </div>
